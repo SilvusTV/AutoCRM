@@ -60,7 +60,7 @@ class TimeEntry extends Model
         if ($this->start_time && $this->end_time) {
             return $this->start_time->diffInMinutes($this->end_time);
         }
-        
+
         return $this->duration_minutes ?? 0;
     }
 }

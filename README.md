@@ -126,6 +126,87 @@ Pour exécuter les tests, utilisez la commande suivante :
 php artisan test
 ```
 
+## Qualité du code
+
+Ce projet utilise [Laravel Pint](https://laravel.com/docs/10.x/pint) pour maintenir un style de code cohérent selon les
+standards Laravel.
+
+### Vérification manuelle du style de code
+
+Pour vérifier le style de code sans appliquer les corrections :
+
+```bash
+vendor/bin/pint --test
+```
+
+Pour appliquer automatiquement les corrections de style :
+
+```bash
+vendor/bin/pint
+```
+
+### Utilisation sans Husky
+
+Si vous préférez ne pas utiliser Husky et les hooks Git, vous pouvez simplement exécuter Laravel Pint manuellement avant
+chaque commit. Voici comment procéder :
+
+1. Vérifiez les fichiers modifiés qui seront inclus dans votre commit :
+
+```bash
+git status
+```
+
+2. Exécutez Laravel Pint pour corriger automatiquement les problèmes de style :
+
+```bash
+# Utiliser la commande directement sur tous les fichiers PHP
+vendor/bin/pint
+
+# Ou utiliser le script npm défini dans package.json (tous les fichiers)
+npm run lint
+
+# Pour n'appliquer les corrections qu'aux fichiers PHP modifiés (plus efficace)
+# Sur Windows
+npm run lint:changed
+
+# Sur Linux/macOS
+npm run lint:changed:unix
+```
+
+3. Ajoutez les fichiers corrigés à votre commit :
+
+```bash
+git add .
+```
+
+4. Effectuez votre commit normalement :
+
+```bash
+git commit -m "Votre message de commit"
+```
+
+Cette approche manuelle vous donne plus de contrôle sur le moment où les corrections de style sont appliquées, sans
+ajouter de complexité avec les hooks Git.
+
+#### Commande tout-en-un
+
+Pour simplifier encore plus le processus, vous pouvez utiliser une commande qui combine toutes les étapes (correction du
+style, ajout des fichiers et commit) :
+
+```bash
+# Sur Windows - remplacez "Votre message de commit" par votre message réel
+npm run lint:commit "Votre message de commit"
+
+# Sur Linux/macOS - remplacez "Votre message de commit" par votre message réel
+npm run lint:commit:unix "Votre message de commit"
+```
+
+Ces commandes vont automatiquement :
+
+1. Corriger les problèmes de style dans les fichiers PHP modifiés
+2. Ajouter les fichiers corrigés à votre commit
+3. Effectuer le commit avec le message que vous avez spécifié
+
 ## Licence
 
 Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.

@@ -54,6 +54,7 @@ class ClientController extends Controller
 
         // Calculate total time spent across all projects
         $totalMinutes = 0;
+
         foreach ($projects as $project) {
             $totalMinutes += $project->timeEntries->sum('duration_minutes');
         }

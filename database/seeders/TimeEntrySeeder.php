@@ -16,7 +16,7 @@ class TimeEntrySeeder extends Seeder
     {
         // Get all users and projects
         $users = User::all();
-        
+
         // Create 10 time entries for each project
         Project::all()->each(function ($project) use ($users) {
             // Randomly select a user for each time entry

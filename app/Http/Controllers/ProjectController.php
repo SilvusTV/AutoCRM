@@ -54,6 +54,7 @@ class ProjectController extends Controller
     {
         $project = Project::with(['client', 'timeEntries.user'])->findOrFail($id);
         $totalMinutes = $project->timeEntries->sum('duration_minutes');
+
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;
 

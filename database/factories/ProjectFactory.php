@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Client;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Project>
+ * @extends Factory<Project>
  */
 class ProjectFactory extends Factory
 {
@@ -19,7 +20,7 @@ class ProjectFactory extends Factory
     {
         $startDate = $this->faker->dateTimeBetween('-1 year', 'now');
         $endDate = $this->faker->optional(0.7)->dateTimeBetween($startDate, '+6 months');
-        
+
         return [
             'client_id' => Client::factory(),
             'name' => $this->faker->sentence(3),
