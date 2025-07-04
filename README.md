@@ -1,6 +1,7 @@
-# Mini-CRM Freelance
+# Auto-CRM Freelance
 
-Mini-CRM Freelance est une application web conçue pour aider les freelances à gérer leur activité professionnelle. Elle permet de suivre les clients, les projets, le temps passé, les factures et les déclarations URSSAF.
+Auto-CRM Freelance est une application web conçue pour aider les freelances à gérer leur activité professionnelle. Elle
+permet de suivre les clients, les projets, le temps passé, les factures et les déclarations URSSAF.
 
 ![Laravel](https://img.shields.io/badge/Laravel-12.0-red)
 ![PHP](https://img.shields.io/badge/PHP-8.2-blue)
@@ -51,8 +52,8 @@ Mini-CRM Freelance est une application web conçue pour aider les freelances à 
 
 1. Clonez le dépôt
 ```bash
-git clone https://github.com/votre-utilisateur/mini-crm-freelance.git
-cd mini-crm-freelance
+git clone https://github.com/votre-utilisateur/auto-crm-freelance.git
+cd auto-crm-freelance
 ```
 
 2. Copiez le fichier d'environnement
@@ -80,8 +81,8 @@ docker-compose exec app npm run build
 
 1. Clonez le dépôt
 ```bash
-git clone https://github.com/votre-utilisateur/mini-crm-freelance.git
-cd mini-crm-freelance
+git clone https://github.com/votre-utilisateur/auto-crm-freelance.git
+cd auto-crm-freelance
 ```
 
 2. Installez les dépendances

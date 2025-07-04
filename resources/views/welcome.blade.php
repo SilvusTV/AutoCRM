@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Mini-CRM Freelance') }}</title>
+        <title>{{ config('app.name', 'Auto-CRM Freelance') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -22,7 +22,7 @@
                         <!-- Logo -->
                         <div class="shrink-0 flex items-center">
                             <a href="{{ url('/') }}" class="font-bold text-xl text-indigo-600 dark:text-indigo-400">
-                                Mini-CRM Freelance
+                                Auto-CRM Freelance
                             </a>
                         </div>
                     </div>
@@ -80,7 +80,8 @@
                         <img class="w-full h-full object-cover opacity-10" src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2850&q=80" alt="Freelance working">
                     </div>
                     <div class="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-                        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">Mini-CRM Freelance</h1>
+                        <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
+                            Auto-CRM Freelance</h1>
                         <p class="mt-6 max-w-3xl text-xl font-medium text-white">Gérez votre activité de freelance en toute simplicité. Suivez vos clients, projets, temps passé et factures en un seul endroit.</p>
                         <div class="mt-10 flex flex-col sm:flex-row gap-4">
                             @if (Route::has('register'))
@@ -208,7 +209,7 @@
             <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
                 <div class="flex justify-center space-x-6 md:order-2">
                     <span class="text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        &copy; {{ date('Y') }} Mini-CRM Freelance. Tous droits réservés.
+                        &copy; {{ date('Y') }} Auto-CRM Freelance. Tous droits réservés.
                     </span>
                 </div>
                 <div class="mt-8 md:mt-0 md:order-1">

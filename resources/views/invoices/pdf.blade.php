@@ -193,7 +193,7 @@
         @endif
 
         <div class="footer">
-            <p>Facture générée le {{ now()->format('d/m/Y') }} via Mini-CRM Freelance</p>
+            <p>Facture générée le {{ now()->format('d/m/Y') }} via Auto-CRM Freelance</p>
             <p>En cas de retard de paiement, une pénalité de 3 fois le taux d'intérêt légal sera appliquée, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40€.</p>
             <p>TVA non applicable, art. 293 B du CGI</p>
         </div>

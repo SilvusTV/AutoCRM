@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    image: mini-crm-app
-    container_name: mini-crm-app
+    image: auto-crm-app
+    container_name: auto-crm-app
     restart: unless-stopped
     volumes:
       - .:/var/www
@@ -17,7 +17,7 @@ services:
 
   nginx:
     image: nginx:stable-alpine
-    container_name: mini-crm-nginx
+    container_name: auto-crm-nginx
     ports:
       - "8000:80"
     volumes:
@@ -30,10 +30,10 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: mini-crm-mysql
+    container_name: auto-crm-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: mini_crm
+      MYSQL_DATABASE: auto_crm
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - dbdata:/var/lib/mysql
