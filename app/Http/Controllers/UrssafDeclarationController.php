@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\URSSAFDeclaration;
 use Illuminate\Http\Request;
 
@@ -33,7 +34,7 @@ class UrssafDeclarationController extends Controller
         $defaultChargeRate = 22.00;
 
         // Calculate the total revenue for the current month from invoices
-        $monthlyRevenue = \App\Models\Invoice::whereMonth('issue_date', $currentMonth)
+        $monthlyRevenue = Invoice::whereMonth('issue_date', $currentMonth)
             ->whereYear('issue_date', $currentYear)
             ->where('status', 'payee')
             ->sum('total_ht');
@@ -47,7 +48,7 @@ class UrssafDeclarationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'year' => 'required|integer|min:2000|max:' . (now()->year + 1),
+            'year' => 'required|integer|min:2000|max:'.(now()->year + 1),
             'month' => 'required|integer|min:1|max:12',
             'declared_revenue' => 'required|numeric|min:0',
             'charge_rate' => 'required|numeric|min:0|max:100',
@@ -71,7 +72,7 @@ class UrssafDeclarationController extends Controller
         $chargesAmount = $validated['declared_revenue'] * ($validated['charge_rate'] / 100);
 
         // Create the declaration
-        $declaration = new URSSAFDeclaration();
+        $declaration = new URSSAFDeclaration;
         $declaration->user_id = auth()->id();
         $declaration->year = $validated['year'];
         $declaration->month = $validated['month'];
@@ -129,7 +130,7 @@ class UrssafDeclarationController extends Controller
         }
 
         $validated = $request->validate([
-            'year' => 'required|integer|min:2000|max:' . (now()->year + 1),
+            'year' => 'required|integer|min:2000|max:'.(now()->year + 1),
             'month' => 'required|integer|min:1|max:12',
             'declared_revenue' => 'required|numeric|min:0',
             'charge_rate' => 'required|numeric|min:0|max:100',

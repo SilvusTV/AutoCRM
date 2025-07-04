@@ -40,7 +40,7 @@ class InvoiceLineController extends Controller
         $totalHT = $validated['quantity'] * $validated['unit_price'];
 
         // Create the invoice line
-        $invoiceLine = new InvoiceLine();
+        $invoiceLine = new InvoiceLine;
         $invoiceLine->invoice_id = $validated['invoice_id'];
         $invoiceLine->description = $validated['description'];
         $invoiceLine->quantity = $validated['quantity'];

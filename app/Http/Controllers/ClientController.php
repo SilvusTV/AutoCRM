@@ -13,6 +13,7 @@ class ClientController extends Controller
     public function index()
     {
         $clients = Client::orderBy('name')->paginate(10);
+
         return view('clients.index', compact('clients'));
     }
 
@@ -71,6 +72,7 @@ class ClientController extends Controller
     public function edit(string $id)
     {
         $client = Client::findOrFail($id);
+
         return view('clients.edit', compact('client'));
     }
 

@@ -14,6 +14,7 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::with('client')->orderBy('created_at', 'desc')->paginate(10);
+
         return view('projects.index', compact('projects'));
     }
 
@@ -24,6 +25,7 @@ class ProjectController extends Controller
     {
         $clients = Client::orderBy('name')->get();
         $selectedClientId = $request->query('client_id');
+
         return view('projects.create', compact('clients', 'selectedClientId'));
     }
 

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\TimeEntry;
-use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TimeEntryController extends Controller
@@ -33,14 +34,14 @@ class TimeEntryController extends Controller
 
         // Apply client filter (via project relationship)
         if ($request->filled('client_id')) {
-            $query->whereHas('project', function($q) use ($request) {
+            $query->whereHas('project', function ($q) use ($request) {
                 $q->where('client_id', $request->client_id);
             });
         }
 
         // Apply description search
         if ($request->filled('description')) {
-            $query->where('description', 'like', '%' . $request->description . '%');
+            $query->where('description', 'like', '%'.$request->description.'%');
         }
 
         $timeEntries = $query->orderBy('date', 'desc')
@@ -52,7 +53,7 @@ class TimeEntryController extends Controller
             ->orderBy('name')
             ->get();
 
-        $clients = \App\Models\Client::orderBy('name')->get();
+        $clients = Client::orderBy('name')->get();
 
         return view('time-entries.index', compact('timeEntries', 'projects', 'clients'));
     }
@@ -87,7 +88,7 @@ class TimeEntryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $timeEntry = new TimeEntry();
+        $timeEntry = new TimeEntry;
         $timeEntry->project_id = $validated['project_id'];
         $timeEntry->user_id = auth()->id();
         $timeEntry->date = $validated['date'];
@@ -100,8 +101,8 @@ class TimeEntryController extends Controller
             $timeEntry->end_time = $validated['end_time'];
 
             // Calculate duration in minutes
-            $start = \Carbon\Carbon::parse($validated['start_time']);
-            $end = \Carbon\Carbon::parse($validated['end_time']);
+            $start = Carbon::parse($validated['start_time']);
+            $end = Carbon::parse($validated['end_time']);
             $timeEntry->duration_minutes = $end->diffInMinutes($start);
         }
 
@@ -182,8 +183,8 @@ class TimeEntryController extends Controller
             $timeEntry->end_time = $validated['end_time'];
 
             // Calculate duration in minutes
-            $start = \Carbon\Carbon::parse($validated['start_time']);
-            $end = \Carbon\Carbon::parse($validated['end_time']);
+            $start = Carbon::parse($validated['start_time']);
+            $end = Carbon::parse($validated['end_time']);
             $timeEntry->duration_minutes = $end->diffInMinutes($start);
         }
 
@@ -233,18 +234,18 @@ class TimeEntryController extends Controller
         }
 
         if ($request->filled('client_id')) {
-            $query->whereHas('project', function($q) use ($request) {
+            $query->whereHas('project', function ($q) use ($request) {
                 $q->where('client_id', $request->client_id);
             });
         }
 
         if ($request->filled('description')) {
-            $query->where('description', 'like', '%' . $request->description . '%');
+            $query->where('description', 'like', '%'.$request->description.'%');
         }
 
         // Get the month to display
         $month = $request->input('month', now()->format('Y-m'));
-        $startOfMonth = \Carbon\Carbon::parse($month . '-01');
+        $startOfMonth = Carbon::parse($month.'-01');
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
         // Get time entries for the selected month
@@ -252,7 +253,7 @@ class TimeEntryController extends Controller
         $timeEntries = $query->get();
 
         // Group time entries by date
-        $groupedEntries = $timeEntries->groupBy(function($entry) {
+        $groupedEntries = $timeEntries->groupBy(function ($entry) {
             return $entry->date->format('Y-m-d');
         });
 
@@ -261,7 +262,7 @@ class TimeEntryController extends Controller
             ->orderBy('name')
             ->get();
 
-        $clients = \App\Models\Client::orderBy('name')->get();
+        $clients = Client::orderBy('name')->get();
 
         // Generate calendar data
         $calendar = [];
@@ -278,7 +279,7 @@ class TimeEntryController extends Controller
                     'date' => $prevMonth->format('Y-m-d'),
                     'day' => $prevMonth->day,
                     'isCurrentMonth' => false,
-                    'entries' => []
+                    'entries' => [],
                 ];
                 $prevMonth->addDay();
             }
@@ -291,7 +292,7 @@ class TimeEntryController extends Controller
                 'date' => $dateStr,
                 'day' => $currentDay->day,
                 'isCurrentMonth' => true,
-                'entries' => $groupedEntries->get($dateStr, [])
+                'entries' => $groupedEntries->get($dateStr, []),
             ];
             $currentDay->addDay();
         }
@@ -305,7 +306,7 @@ class TimeEntryController extends Controller
                 'date' => $currentDay->format('Y-m-d'),
                 'day' => $currentDay->day,
                 'isCurrentMonth' => false,
-                'entries' => []
+                'entries' => [],
             ];
             $currentDay->addDay();
         }
@@ -315,12 +316,12 @@ class TimeEntryController extends Controller
         $nextMonth = $startOfMonth->copy()->addMonth()->format('Y-m');
 
         return view('time-entries.calendar', compact(
-            'calendar', 
-            'month', 
-            'startOfMonth', 
-            'prevMonth', 
-            'nextMonth', 
-            'projects', 
+            'calendar',
+            'month',
+            'startOfMonth',
+            'prevMonth',
+            'nextMonth',
+            'projects',
             'clients'
         ));
     }
@@ -347,36 +348,36 @@ class TimeEntryController extends Controller
         }
 
         if ($request->filled('client_id')) {
-            $query->whereHas('project', function($q) use ($request) {
+            $query->whereHas('project', function ($q) use ($request) {
                 $q->where('client_id', $request->client_id);
             });
         }
 
         if ($request->filled('description')) {
-            $query->where('description', 'like', '%' . $request->description . '%');
+            $query->where('description', 'like', '%'.$request->description.'%');
         }
 
         $timeEntries = $query->orderBy('date', 'desc')->get();
 
         // Create CSV file
-        $filename = 'time_entries_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'time_entries_'.now()->format('Y-m-d_His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($timeEntries) {
+        $callback = function () use ($timeEntries) {
             $file = fopen('php://output', 'w');
 
             // Add CSV header
             fputcsv($file, [
-                'Date', 
-                'Projet', 
-                'Client', 
-                'Durée (minutes)', 
-                'Heure de début', 
-                'Heure de fin', 
-                'Description'
+                'Date',
+                'Projet',
+                'Client',
+                'Durée (minutes)',
+                'Heure de début',
+                'Heure de fin',
+                'Description',
             ]);
 
             // Add data rows
@@ -388,7 +389,7 @@ class TimeEntryController extends Controller
                     $entry->duration_minutes,
                     $entry->start_time ? $entry->start_time->format('H:i') : '',
                     $entry->end_time ? $entry->end_time->format('H:i') : '',
-                    $entry->description
+                    $entry->description,
                 ]);
             }
 

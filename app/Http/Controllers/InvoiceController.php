@@ -60,7 +60,7 @@ class InvoiceController extends Controller
         $totalTTC = $validated['total_ht'] * (1 + ($validated['tva_rate'] / 100));
 
         // Create the invoice
-        $invoice = new Invoice();
+        $invoice = new Invoice;
         $invoice->client_id = $validated['client_id'];
         $invoice->project_id = $validated['project_id'];
         $invoice->invoice_number = $validated['invoice_number'];
@@ -111,7 +111,7 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'project_id' => 'required|exists:projects,id',
-            'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,' . $id,
+            'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,'.$id,
             'status' => 'required|in:brouillon,envoyee,payee',
             'total_ht' => 'required|numeric|min:0',
             'tva_rate' => 'required|numeric|min:0|max:100',
@@ -164,6 +164,6 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
 
-        return $pdf->download('facture_' . $invoice->invoice_number . '.pdf');
+        return $pdf->download('facture_'.$invoice->invoice_number.'.pdf');
     }
 }
