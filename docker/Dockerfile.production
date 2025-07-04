@@ -40,5 +40,9 @@ RUN composer install --no-dev --optimize-autoloader \
     && php artisan view:cache \
     && php artisan
 
+# Set proper permissions for storage directory
+RUN chown -R www-data:www-data /var/www/storage \
+    && chmod -R 775 /var/www/storage
+
 # Start PHP-FPM
 CMD ["php-fpm"]
