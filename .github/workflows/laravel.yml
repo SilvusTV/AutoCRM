@@ -58,6 +58,17 @@ jobs:
     - name: Run Migrations
       run: php artisan migrate --force
 
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install NPM dependencies
+      run: npm ci
+
+    - name: Build Vite assets
+      run: npm run build
+
     - name: Execute tests (Unit and Feature tests) via PHPUnit
       run: vendor/bin/phpunit
 
