@@ -145,6 +145,23 @@ Pour appliquer automatiquement les corrections de style :
 vendor/bin/pint
 ```
 
+### Pre-commit Hook avec Husky
+
+Ce projet utilise [Husky](https://typicode.github.io/husky/) pour exécuter automatiquement Laravel Pint sur les fichiers
+PHP modifiés avant chaque commit. Cela garantit que tout le code commité respecte les standards de codage Laravel.
+
+Pour configurer le hook pre-commit :
+
+```bash
+# Installer les dépendances npm si ce n'est pas déjà fait
+npm install
+
+# Configurer Husky (gestionnaire de hooks Git)
+npm run prepare
+```
+
+Pour plus d'informations sur les hooks Git, consultez le [README dans le dossier .husky](.husky/README.md).
+
 ### Utilisation sans Husky
 
 Si vous préférez ne pas utiliser Husky et les hooks Git, vous pouvez simplement exécuter Laravel Pint manuellement avant
