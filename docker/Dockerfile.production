@@ -1,70 +1,44 @@
 FROM php:8.2-fpm
 
-# Set environment variables
-ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV APP_ENV=production
-ENV NODE_VERSION=20.x
-
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg-dev \
-    libonig-dev \
-    libxml2-dev \
+    git \
+    curl \
     zip \
     unzip \
-    curl \
-    git \
+    nano \
     libzip-dev \
-    libpq-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    gnupg \
+    ca-certificates \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - \
-    && apt-get install -y nodejs
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Install Node.js (version 20 LTS)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm
+
 # Set working directory
 WORKDIR /var/www
 
-# Copy application files
-COPY . /var/www/
+# Copy source files
+COPY . .
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-# Install Node.js dependencies and build assets
-RUN npm install && npm run build
-
-# Create a startup script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Wait for database to be ready\n\
-echo "Waiting for database..."\n\
-until php -r "try { new PDO(\"mysql:host=\${DB_HOST};dbname=\${DB_DATABASE}\", \"\${DB_USERNAME}\", \"\${DB_PASSWORD}\"); echo \"Database connection successful\\n\"; break; } catch (PDOException \$e) { echo \"Database connection failed: \" . \$e->getMessage() . \"\\n\"; sleep 2; }";\n\
-do\n\
-  echo "Database not ready yet..."\n\
-  sleep 2\n\
-done\n\
-\n\
-# Run migrations\n\
-php artisan migrate --force\n\
-\n\
-# Start PHP-FPM\n\
-php-fpm\n\
-' > /usr/local/bin/start.sh \
-    && chmod +x /usr/local/bin/start.sh
-
-# Expose port 9000 for PHP-FPM
-EXPOSE 9000
+# Install PHP and JS dependencies
+RUN composer install --no-dev --optimize-autoloader \
+    && npm ci && npm run build \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && php artisan
 
 # Start PHP-FPM
-CMD ["/usr/local/bin/start.sh"]
+CMD ["php-fpm"]
