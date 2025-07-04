@@ -48,7 +48,7 @@ permet de suivre les clients, les projets, le temps passé, les factures et les 
 - MySQL ou MariaDB
 - Node.js et NPM
 
-### Installation avec Docker
+### Installation avec Docker (Développement)
 
 1. Clonez le dépôt
 ```bash
@@ -76,6 +76,47 @@ docker-compose exec app npm run build
 ```
 
 5. Accédez à l'application à l'adresse http://localhost:8000
+
+### Déploiement en production avec Docker
+
+Pour déployer l'application en production, nous avons créé un Dockerfile spécifique qui automatise l'installation des
+dépendances, les migrations et la compilation des assets.
+
+1. Clonez le dépôt
+
+```bash
+git clone https://github.com/votre-utilisateur/auto-crm-freelance.git
+cd auto-crm-freelance
+```
+
+2. Copiez et configurez le fichier d'environnement pour la production
+
+```bash
+cp .env.example .env
+# Éditez le fichier .env pour configurer les paramètres de production
+# Assurez-vous de définir APP_ENV=production et APP_DEBUG=false
+```
+
+3. Lancez les conteneurs Docker pour la production
+
+```bash
+docker-compose -f docker-compose-production.yml up -d
+```
+
+4. Créez un lien symbolique pour le stockage (si nécessaire)
+
+```bash
+docker-compose -f docker-compose-production.yml exec app php artisan storage:link
+```
+
+5. Accédez à l'application à l'adresse de votre serveur
+
+Le Dockerfile de production effectue automatiquement les opérations suivantes :
+
+- Installation des dépendances PHP avec Composer (optimisées pour la production)
+- Installation des dépendances Node.js et compilation des assets
+- Configuration des permissions appropriées
+- Exécution des migrations de base de données au démarrage du conteneur
 
 ### Installation manuelle
 
@@ -119,6 +160,33 @@ php artisan serve
 ```
 
 9. Accédez à l'application à l'adresse http://localhost:8000
+
+## Configuration de l'email pour la production
+
+Par défaut, l'application utilise Mailpit pour les emails en environnement de développement. Pour la production, vous
+pouvez utiliser [Resend](https://resend.com), un service d'envoi d'emails moderne et fiable.
+
+### Configuration de Resend
+
+1. Créez un compte sur [Resend](https://resend.com) et obtenez votre clé API
+
+2. Modifiez votre fichier `.env` en production pour utiliser Resend :
+
+```
+MAIL_MAILER=resend
+RESEND_KEY=votre_cle_api_resend
+MAIL_FROM_ADDRESS=votre_email@votredomaine.com
+MAIL_FROM_NAME="Nom de votre application"
+```
+
+3. Assurez-vous que les emails transactionnels fonctionnent correctement en testant les fonctionnalités comme la
+   réinitialisation de mot de passe ou la vérification d'email
+
+### Autres services d'email
+
+L'application prend également en charge d'autres services d'envoi d'emails comme Mailgun, Postmark, ou Amazon SES.
+Consultez la [documentation de Laravel](https://laravel.com/docs/12.x/mail) pour plus d'informations sur la
+configuration de ces services.
 
 ## Tests
 
