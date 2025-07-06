@@ -1,48 +1,59 @@
-FROM php:8.2-fpm
+# Stage 1: Builder PHP + Composer + Node
+FROM composer:2.7 AS build
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
+WORKDIR /app
+
+# Copy the code
+COPY . .
+
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev
+
+# Install JS dependencies and build assets
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update && apt-get install -y nodejs \
+    && npm install && npm run build \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+# Stage 2: Production image
+FROM php:8.3-fpm-alpine
+
+# Install system dependencies and PHP extensions
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
     zip \
     unzip \
-    nano \
-    libzip-dev \
+    git \
+    curl \
     libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    oniguruma-dev \
     libxml2-dev \
-    gnupg \
-    ca-certificates \
+    libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Configure nginx
+COPY docker/nginx/default-production-ssl.conf /etc/nginx/http.d/default.conf
 
-# Install Node.js (version 20 LTS)
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g npm
+# Configure supervisor
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set working directory
 WORKDIR /var/www
 
-# Copy source files
-COPY . .
+# Copy the app from the build stage
+COPY --from=build /app /var/www
 
-# Install PHP and JS dependencies
-RUN composer install --no-dev --optimize-autoloader \
-    && npm i && npm run build \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache \
-    && php artisan
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Set proper permissions for storage directory
-RUN chown -R www-data:www-data /var/www/storage \
-    && chmod -R 775 /var/www/storage
+# Expose port 80
+EXPOSE 80
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Start supervisor to manage nginx and php-fpm
+CMD php artisan migrate --force && supervisord -c /etc/supervisor/conf.d/supervisord.conf
