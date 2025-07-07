@@ -15,6 +15,8 @@ services:
     volumes:
       - ./storage:/var/www/storage
       - ./docker/nginx/ssl:/etc/nginx/ssl
+      - letsencrypt_certs:/etc/letsencrypt
+      - letsencrypt_www:/var/www/certbot
     environment:
       - DB_CONNECTION=${DB_CONNECTION}
       - DB_HOST=${DB_HOST}
@@ -25,8 +27,23 @@ services:
     networks:
       - laravel
 
+  certbot:
+    image: certbot/certbot
+    container_name: auto-crm-certbot
+    volumes:
+      - letsencrypt_certs:/etc/letsencrypt
+      - letsencrypt_www:/var/www/certbot
+    depends_on:
+      - app
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN_NAME} --force-renewal
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - laravel
+
 volumes:
   dbdata:
+  letsencrypt_certs:
+  letsencrypt_www:
 
 networks:
   laravel:
