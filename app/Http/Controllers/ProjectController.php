@@ -113,17 +113,14 @@ class ProjectController extends Controller
                     ->withInput();
             }
 
-            // For companies, we need to create a new client record or use an existing one
-            $client = Client::firstOrCreate(
-                ['company_id' => $company->id, 'name' => $company->name],
-                [
-                    'email' => $company->email ?? 'contact@'.strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $company->name)).'.com',
-                    'company_name' => $company->name,
-                    'phone' => $company->phone,
-                    'address' => $company->address,
-                    'siret' => $company->siret,
-                ]
-            );
+            // For companies, we need to find an existing client associated with this company
+            $client = Client::where('company_id', $company->id)->first();
+
+            if (! $client) {
+                return redirect()->back()
+                    ->withErrors(['recipient_id' => 'Aucun client associé à cette entreprise. Veuillez d\'abord créer un client et l\'associer à cette entreprise.'])
+                    ->withInput();
+            }
 
             $validated['client_id'] = $client->id;
         } else {
@@ -253,17 +250,14 @@ class ProjectController extends Controller
                     ->withInput();
             }
 
-            // For companies, we need to create a new client record or use an existing one
-            $client = Client::firstOrCreate(
-                ['company_id' => $company->id, 'name' => $company->name],
-                [
-                    'email' => $company->email ?? 'contact@'.strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $company->name)).'.com',
-                    'company_name' => $company->name,
-                    'phone' => $company->phone,
-                    'address' => $company->address,
-                    'siret' => $company->siret,
-                ]
-            );
+            // For companies, we need to find an existing client associated with this company
+            $client = Client::where('company_id', $company->id)->first();
+
+            if (! $client) {
+                return redirect()->back()
+                    ->withErrors(['recipient_id' => 'Aucun client associé à cette entreprise. Veuillez d\'abord créer un client et l\'associer à cette entreprise.'])
+                    ->withInput();
+            }
 
             $validated['client_id'] = $client->id;
         } else {

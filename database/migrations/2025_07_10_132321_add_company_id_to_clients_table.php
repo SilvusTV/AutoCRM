@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->renameColumn('company', 'company_name');
+            $table->removeColumn('company');
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('set null');
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
         Schema::table('clients', function (Blueprint $table) {
             $table->dropForeign(['company_id']);
             $table->dropColumn('company_id');
-            $table->renameColumn('company_name', 'company');
+            $table->string('company')->nullable();
         });
     }
 };

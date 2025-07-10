@@ -42,7 +42,7 @@ class InvoiceController extends Controller
                 'name' => $client->name,
                 'type' => 'client',
                 'type_icon' => '👤',
-                'details' => $client->company_name ? '('.$client->company_name.')' : '',
+                'details' => $client->company ? '('.$client->company->name.')' : '',
                 'model' => $client,
             ];
         }

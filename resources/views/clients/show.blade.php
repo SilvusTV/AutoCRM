@@ -34,10 +34,6 @@
                             <p class="font-medium">{{ $client->name }}</p>
                         </div>
 
-                        <div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Nom d'entreprise</p>
-                            <p class="font-medium">{{ $client->company_name ?? 'Non spécifié' }}</p>
-                        </div>
 
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Entreprise associée</p>
