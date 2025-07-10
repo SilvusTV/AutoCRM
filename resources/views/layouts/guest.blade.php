@@ -4,6 +4,24 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="description"
+              content="Auto-CRM Freelance - Gérez votre activité de freelance en toute simplicité. Suivez vos clients, projets, temps passé et factures en un seul endroit.">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url('/') }}">
+        <meta property="og:title" content="{{ config('app.name', 'Laravel') }}">
+        <meta property="og:description"
+              content="Gérez votre activité de freelance en toute simplicité. Suivez vos clients, projets, temps passé et factures en un seul endroit.">
+        <meta property="og:image" content="{{ asset('images/og-image.jpg', true) }}">
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ url('/') }}">
+        <meta name="twitter:title" content="{{ config('app.name', 'Laravel') }}">
+        <meta name="twitter:description"
+              content="Gérez votre activité de freelance en toute simplicité. Suivez vos clients, projets, temps passé et factures en un seul endroit.">
+        <meta name="twitter:image" content="{{ asset('images/og-image.jpg', true) }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
