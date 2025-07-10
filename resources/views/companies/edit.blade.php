@@ -61,6 +61,30 @@
                             <x-input-error :messages="$errors->get('siret')" class="mt-2"/>
                         </div>
 
+                        <!-- TVA Number -->
+                        <div>
+                            <x-input-label for="tva_number" :value="__('Numéro TVA (optionnel)')"/>
+                            <x-text-input id="tva_number" class="block mt-1 w-full" type="text" name="tva_number"
+                                          :value="old('tva_number', $company->tva_number)"/>
+                            <x-input-error :messages="$errors->get('tva_number')" class="mt-2"/>
+                        </div>
+
+                        <!-- NAF Code -->
+                        <div>
+                            <x-input-label for="naf_code" :value="__('Code NAF (optionnel)')"/>
+                            <x-text-input id="naf_code" class="block mt-1 w-full" type="text" name="naf_code"
+                                          :value="old('naf_code', $company->naf_code)"/>
+                            <x-input-error :messages="$errors->get('naf_code')" class="mt-2"/>
+                        </div>
+
+                        <!-- Country -->
+                        <div>
+                            <x-input-label for="country" :value="__('Pays (optionnel)')"/>
+                            <x-text-input id="country" class="block mt-1 w-full" type="text" name="country"
+                                          :value="old('country', $company->country)"/>
+                            <x-input-error :messages="$errors->get('country')" class="mt-2"/>
+                        </div>
+
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ml-4">
                                 {{ __('Mettre à jour') }}

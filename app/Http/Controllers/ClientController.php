@@ -38,7 +38,7 @@ class ClientController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'siret' => 'nullable|string|max:14',
+            'country' => 'nullable|string|max:255',
             'company_id' => 'nullable|exists:companies,id',
         ]);
 
@@ -92,7 +92,7 @@ class ClientController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'siret' => 'nullable|string|max:14',
+            'country' => 'nullable|string|max:255',
             'company_id' => 'nullable|exists:companies,id',
         ]);
 

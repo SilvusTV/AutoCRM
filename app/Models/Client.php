@@ -21,7 +21,7 @@ class Client extends Model
         'email',
         'phone',
         'address',
-        'siret',
+        'country',
         'company_id',
     ];
 

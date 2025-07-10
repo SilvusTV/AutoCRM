@@ -62,11 +62,12 @@
                             <x-input-error :messages="$errors->get('address')" class="mt-2" />
                         </div>
 
-                        <!-- SIRET -->
+                        <!-- Country -->
                         <div>
-                            <x-input-label for="siret" :value="__('Numéro SIRET (optionnel)')" />
-                            <x-text-input id="siret" class="block mt-1 w-full" type="text" name="siret" :value="old('siret', $client->siret)" />
-                            <x-input-error :messages="$errors->get('siret')" class="mt-2" />
+                            <x-input-label for="country" :value="__('Pays (optionnel)')"/>
+                            <x-text-input id="country" class="block mt-1 w-full" type="text" name="country"
+                                          :value="old('country', $client->country)"/>
+                            <x-input-error :messages="$errors->get('country')" class="mt-2"/>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

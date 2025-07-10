@@ -21,6 +21,9 @@ class Company extends Model
         'phone',
         'address',
         'siret',
+        'tva_number',
+        'naf_code',
+        'country',
     ];
 
     /**

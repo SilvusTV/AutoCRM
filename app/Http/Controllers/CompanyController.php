@@ -28,6 +28,9 @@ class CompanyController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'siret' => 'nullable|string|max:14',
+            'tva_number' => 'nullable|string|max:255',
+            'naf_code' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
         ]);
 
         $company = Company::create($validated);
@@ -79,6 +82,9 @@ class CompanyController extends Controller
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'siret' => 'nullable|string|max:14',
+            'tva_number' => 'nullable|string|max:255',
+            'naf_code' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
         ]);
 
         $company->update($validated);

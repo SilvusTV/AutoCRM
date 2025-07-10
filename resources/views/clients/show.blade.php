@@ -65,8 +65,8 @@
                         </div>
 
                         <div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">SIRET</p>
-                            <p class="font-medium">{{ $client->siret ?? 'Non spécifié' }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Pays</p>
+                            <p class="font-medium">{{ $client->country ?? 'Non spécifié' }}</p>
                         </div>
 
                         <div>
