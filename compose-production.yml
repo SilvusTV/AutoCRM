@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile-prod
+    container_name: laravel-app
+    environment:
+      - VIRTUAL_HOST=www.autocrm.fr
+      - LETSENCRYPT_HOST=www.autocrm.fr
+      - LETSENCRYPT_EMAIL=contact@autocrm.fr
+      - VIRTUAL_PORT=80
+    volumes:
+      - ./:/var/www
+      - ./docker/php/default.conf:/etc/nginx/conf.d/default.conf
+    expose:
+      - "80"
+    networks:
+      - nginx-network
+    depends_on:
+      - mysql
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - nginx-network
+    restart: always
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: nginx-letsencrypt
+    environment:
+      - DEFAULT_EMAIL=contact@autocrm.fr
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - nginx-network
+    restart: always
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: autocrm
+      MYSQL_USER: autocrm
+      MYSQL_PASSWORD: autocrm
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - nginx-network
+    restart: always
+
+volumes:
+  mysql-data:
+
+networks:
+  nginx-network:
+    external: true
