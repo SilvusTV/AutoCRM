@@ -34,6 +34,7 @@
                             <p class="font-medium">{{ $invoice->invoice_number }}</p>
                         </div>
 
+                        @if($invoice->client)
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Client</p>
                             <p class="font-medium">
@@ -42,6 +43,19 @@
                                 </a>
                             </p>
                         </div>
+                        @endif
+
+                        @if($invoice->company)
+                            <div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Entreprise</p>
+                                <p class="font-medium">
+                                    <a href="{{ route('companies.show', $invoice->company->id) }}"
+                                       class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                        {{ $invoice->company->name }}
+                                    </a>
+                                </p>
+                            </div>
+                        @endif
 
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Projet</p>

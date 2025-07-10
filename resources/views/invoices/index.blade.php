@@ -26,7 +26,10 @@
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Numéro</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Client</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Destinataire
+                                        </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Projet</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Montant TTC</th>
@@ -42,9 +45,23 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <a href="{{ route('clients.show', $invoice->client->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                                        {{ $invoice->client->name }}
-                                                    </a>
+                                                    @if($invoice->client)
+                                                        <a href="{{ route('clients.show', $invoice->client->id) }}"
+                                                           class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                            {{ $invoice->client->name }}
+                                                        </a>
+                                                    @endif
+
+                                                    @if($invoice->client && $invoice->company)
+                                                        <span class="mx-1">|</span>
+                                                    @endif
+
+                                                    @if($invoice->company)
+                                                        <a href="{{ route('companies.show', $invoice->company->id) }}"
+                                                           class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                            {{ $invoice->company->name }}
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">

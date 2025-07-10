@@ -27,11 +27,25 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+                        <!-- Company Name -->
+                        <div>
+                            <x-input-label for="company_name" :value="__('Nom d\'entreprise (optionnel)')"/>
+                            <x-text-input id="company_name" class="block mt-1 w-full" type="text" name="company_name"
+                                          :value="old('company_name', $client->company_name)"/>
+                            <x-input-error :messages="$errors->get('company_name')" class="mt-2"/>
+                        </div>
+
                         <!-- Company -->
                         <div>
-                            <x-input-label for="company" :value="__('Entreprise (optionnel)')" />
-                            <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company', $client->company)" />
-                            <x-input-error :messages="$errors->get('company')" class="mt-2" />
+                            <x-input-label for="company_id" :value="__('Entreprise associée (optionnel)')"/>
+                            <select id="company_id" name="company_id"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">Sélectionner une entreprise</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}" {{ (old('company_id', $client->company_id) == $company->id) ? 'selected' : '' }}>{{ $company->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('company_id')" class="mt-2"/>
                         </div>
 
                         <!-- Email -->

@@ -20,18 +20,19 @@
                         @csrf
                         @method('PUT')
 
-                        <!-- Client -->
+                        <!-- Combined Recipient Selector -->
                         <div>
-                            <x-input-label for="client_id" :value="__('Client')" />
-                            <select id="client_id" name="client_id" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
-                                <option value="">Sélectionnez un client</option>
-                                @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ old('client_id', $invoice->client_id) == $client->id ? 'selected' : '' }}>
-                                        {{ $client->name }} {{ $client->company ? '(' . $client->company . ')' : '' }}
+                            <x-input-label for="recipient_id" :value="__('Destinataire')"/>
+                            <select id="recipient_id" name="recipient_id"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">Sélectionnez un destinataire</option>
+                                @foreach($recipients as $recipient)
+                                    <option value="{{ $recipient['id'] }}" {{ old('recipient_id', $selectedRecipientId) == $recipient['id'] ? 'selected' : '' }}>
+                                        {{ $recipient['type_icon'] }} {{ $recipient['name'] }} {{ $recipient['details'] }}
                                     </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('client_id')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('recipient_id')" class="mt-2"/>
                         </div>
 
                         <!-- Project -->
@@ -125,47 +126,48 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             // Calculate total TTC when total_ht or tva_rate changes
             const totalHtInput = document.getElementById('total_ht');
             const tvaRateInput = document.getElementById('tva_rate');
-            
-            function updateTotalTTC() {
+
+          function updateTotalTTC() {
                 const totalHt = parseFloat(totalHtInput.value) || 0;
                 const tvaRate = parseFloat(tvaRateInput.value) || 0;
                 const totalTtc = totalHt * (1 + (tvaRate / 100));
-                
-                console.log(`Total HT: ${totalHt}, TVA Rate: ${tvaRate}, Total TTC: ${totalTtc.toFixed(2)}`);
+
+            console.log(`Total HT: ${totalHt}, TVA Rate: ${tvaRate}, Total TTC: ${totalTtc.toFixed(2)}`);
             }
-            
-            totalHtInput.addEventListener('input', updateTotalTTC);
+
+          totalHtInput.addEventListener('input', updateTotalTTC);
             tvaRateInput.addEventListener('input', updateTotalTTC);
-            
-            // Filter projects by selected client
+
+          // Filter projects by selected client
             const clientSelect = document.getElementById('client_id');
             const projectSelect = document.getElementById('project_id');
             const originalProjects = Array.from(projectSelect.options);
-            
+
             clientSelect.addEventListener('change', function() {
                 const selectedClientId = this.value;
-                
-                // Clear current options
+
+              // Clear current options
                 projectSelect.innerHTML = '';
-                
-                // Add default option
+
+              // Add default option
                 const defaultOption = document.createElement('option');
                 defaultOption.text = 'Sélectionnez un projet';
                 defaultOption.value = '';
                 projectSelect.add(defaultOption);
-                
-                // Add filtered options
+
+              // Add filtered options
                 originalProjects.forEach(option => {
                     if (option.value === '' || option.dataset.clientId === selectedClientId) {
                         projectSelect.add(option.cloneNode(true));
                     }
                 });
             });
-            
-            // Initialize project filtering
+
+          // Initialize total TTC calculation
             updateTotalTTC();
         });
     </script>

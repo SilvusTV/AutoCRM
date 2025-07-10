@@ -17,18 +17,19 @@
                     <form method="POST" action="{{ route('invoices.store') }}" class="space-y-6">
                         @csrf
 
-                        <!-- Client -->
+                        <!-- Combined Recipient Selector -->
                         <div>
-                            <x-input-label for="client_id" :value="__('Client')" />
-                            <select id="client_id" name="client_id" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
-                                <option value="">Sélectionnez un client</option>
-                                @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" {{ old('client_id', $selectedClientId) == $client->id ? 'selected' : '' }}>
-                                        {{ $client->name }} {{ $client->company ? '(' . $client->company . ')' : '' }}
+                            <x-input-label for="recipient_id" :value="__('Destinataire')"/>
+                            <select id="recipient_id" name="recipient_id"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">Sélectionnez un destinataire</option>
+                                @foreach($recipients as $recipient)
+                                    <option value="{{ $recipient['id'] }}" {{ old('recipient_id', $selectedRecipientId) == $recipient['id'] ? 'selected' : '' }}>
+                                        {{ $recipient['type_icon'] }} {{ $recipient['name'] }} {{ $recipient['details'] }}
                                     </option>
                                 @endforeach
                             </select>
-                            <x-input-error :messages="$errors->get('client_id')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('recipient_id')" class="mt-2"/>
                         </div>
 
                         <!-- Project -->
@@ -115,4 +116,5 @@
             </div>
         </div>
     </div>
+
 </x-app-layout>

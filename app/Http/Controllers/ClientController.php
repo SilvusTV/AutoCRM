@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -22,7 +23,9 @@ class ClientController extends Controller
      */
     public function create()
     {
-        return view('clients.create');
+        $companies = Company::orderBy('name')->get();
+
+        return view('clients.create', compact('companies'));
     }
 
     /**
@@ -32,11 +35,12 @@ class ClientController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'siret' => 'nullable|string|max:14',
+            'company_id' => 'nullable|exists:companies,id',
         ]);
 
         $client = Client::create($validated);
@@ -72,8 +76,9 @@ class ClientController extends Controller
     public function edit(string $id)
     {
         $client = Client::findOrFail($id);
+        $companies = Company::orderBy('name')->get();
 
-        return view('clients.edit', compact('client'));
+        return view('clients.edit', compact('client', 'companies'));
     }
 
     /**
@@ -85,11 +90,12 @@ class ClientController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'company' => 'nullable|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'siret' => 'nullable|string|max:14',
+            'company_id' => 'nullable|exists:companies,id',
         ]);
 
         $client->update($validated);

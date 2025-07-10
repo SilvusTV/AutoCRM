@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceLineController;
 use App\Http\Controllers\ProfileController;
@@ -24,6 +25,9 @@ Route::middleware('auth')->group(function () {
 
     // Client routes
     Route::resource('clients', ClientController::class);
+
+    // Company routes
+    Route::resource('companies', CompanyController::class);
 
     // Project routes
     Route::resource('projects', ProjectController::class);

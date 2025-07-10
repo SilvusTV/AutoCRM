@@ -121,13 +121,41 @@
                 </div>
                 <div class="col client-info">
                     <h3>DESTINATAIRE</h3>
+                    @if($invoice->client)
                     <p><strong>{{ $invoice->client->name }}</strong></p>
+                        @if($invoice->client->address)
                     <p>{{ $invoice->client->address }}</p>
+                        @endif
+                        @if(isset($invoice->client->postal_code) && isset($invoice->client->city))
                     <p>{{ $invoice->client->postal_code }}, {{ $invoice->client->city }}</p>
+                        @endif
                     <p>Email: {{ $invoice->client->email }}</p>
+                        @if($invoice->client->phone)
                     <p>Téléphone: {{ $invoice->client->phone }}</p>
+                        @endif
                     @if($invoice->client->siret)
                     <p>SIRET: {{ $invoice->client->siret }}</p>
+                        @endif
+                    @endif
+
+                    @if($invoice->client && $invoice->company)
+                        <hr style="margin: 10px 0;">
+                    @endif
+
+                    @if($invoice->company)
+                        <p><strong>{{ $invoice->company->name }}</strong></p>
+                        @if($invoice->company->address)
+                            <p>{{ $invoice->company->address }}</p>
+                        @endif
+                        @if($invoice->company->email)
+                            <p>Email: {{ $invoice->company->email }}</p>
+                        @endif
+                        @if($invoice->company->phone)
+                            <p>Téléphone: {{ $invoice->company->phone }}</p>
+                        @endif
+                        @if($invoice->company->siret)
+                            <p>SIRET: {{ $invoice->company->siret }}</p>
+                        @endif
                     @endif
                 </div>
             </div>

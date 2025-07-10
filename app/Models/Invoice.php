@@ -18,6 +18,7 @@ class Invoice extends Model
      */
     protected $fillable = [
         'client_id',
+        'company_id',
         'project_id',
         'invoice_number',
         'status',
@@ -58,6 +59,14 @@ class Invoice extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * Get the company that owns the invoice.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**
