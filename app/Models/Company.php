@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Client extends Model
+class Company extends Model
 {
     use HasFactory;
 
@@ -21,31 +20,25 @@ class Client extends Model
         'email',
         'phone',
         'address',
+        'siret',
+        'tva_number',
+        'naf_code',
         'country',
-        'company_id',
     ];
 
     /**
-     * Get the projects for the client.
+     * Get the clients associated with the company.
      */
-    public function projects(): HasMany
+    public function clients(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Client::class);
     }
 
     /**
-     * Get the invoices for the client.
+     * Get the invoices directly associated with the company.
      */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
-    }
-
-    /**
-     * Get the company that the client belongs to.
-     */
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
     }
 }

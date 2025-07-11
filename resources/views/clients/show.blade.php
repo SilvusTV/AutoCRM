@@ -34,9 +34,19 @@
                             <p class="font-medium">{{ $client->name }}</p>
                         </div>
 
+
                         <div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Entreprise</p>
-                            <p class="font-medium">{{ $client->company ?? 'Non spécifié' }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Entreprise associée</p>
+                            <p class="font-medium">
+                                @if($client->company)
+                                    <a href="{{ route('companies.show', $client->company->id) }}"
+                                       class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                        {{ $client->company->name }}
+                                    </a>
+                                @else
+                                    Non spécifié
+                                @endif
+                            </p>
                         </div>
 
                         <div>
@@ -55,8 +65,8 @@
                         </div>
 
                         <div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">SIRET</p>
-                            <p class="font-medium">{{ $client->siret ?? 'Non spécifié' }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Pays</p>
+                            <p class="font-medium">{{ $client->country ?? 'Non spécifié' }}</p>
                         </div>
 
                         <div>
