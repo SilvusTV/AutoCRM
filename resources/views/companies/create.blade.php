@@ -70,7 +70,7 @@
                         <div>
                             <x-input-label for="naf_code" :value="__('Code NAF')"/>
                             <x-text-input id="naf_code" class="block mt-1 w-full" type="text" name="naf_code"
-                                          :value="old('naf_code', 'NAF')"/>
+                                          :value="old('naf_code', '')" placeholder="Entrez le code NAF"/>
                             <x-input-error :messages="$errors->get('naf_code')" class="mt-2"/>
                         </div>
 
