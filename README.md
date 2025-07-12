@@ -27,7 +27,7 @@ permet de suivre les clients, les projets, le temps passé, les factures et les 
 ### Facturation
 - Création de factures liées aux projets
 - Gestion des lignes de facturation
-- Suivi du statut des factures (brouillon, envoyée, payée)
+- Suivi du statut des factures (draft, sent, paid, cancelled, overdue)
 - Génération de PDF pour les factures
 
 ### Déclarations URSSAF

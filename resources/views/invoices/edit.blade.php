@@ -5,7 +5,8 @@
                 {{ __('Modifier la facture') }}: {{ $invoice->invoice_number }}
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('invoices.show', $invoice->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <a href="{{ route('invoices.preview', $invoice->id) }}"
+                   class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     {{ __('Annuler') }}
                 </a>
             </div>
@@ -60,9 +61,21 @@
                         <div>
                             <x-input-label for="status" :value="__('Statut')" />
                             <select id="status" name="status" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
-                                <option value="brouillon" {{ old('status', $invoice->status) == 'brouillon' ? 'selected' : '' }}>Brouillon</option>
-                                <option value="envoyee" {{ old('status', $invoice->status) == 'envoyee' ? 'selected' : '' }}>Envoyée</option>
-                                <option value="payee" {{ old('status', $invoice->status) == 'payee' ? 'selected' : '' }}>Payée</option>
+                                <option value="draft" {{ old('status', $invoice->status) == 'draft' ? 'selected' : '' }}>
+                                    Brouillon
+                                </option>
+                                <option value="sent" {{ old('status', $invoice->status) == 'sent' ? 'selected' : '' }}>
+                                    Envoyée
+                                </option>
+                                <option value="paid" {{ old('status', $invoice->status) == 'paid' ? 'selected' : '' }}>
+                                    Payée
+                                </option>
+                                <option value="cancelled" {{ old('status', $invoice->status) == 'cancelled' ? 'selected' : '' }}>
+                                    Annulée
+                                </option>
+                                <option value="overdue" {{ old('status', $invoice->status) == 'overdue' ? 'selected' : '' }}>
+                                    Expirée
+                                </option>
                             </select>
                             <x-input-error :messages="$errors->get('status')" class="mt-2" />
                         </div>

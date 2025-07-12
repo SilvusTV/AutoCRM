@@ -15,6 +15,13 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::with('client')->orderBy('created_at', 'desc')->paginate(10);
+        foreach ($projects as $project) {
+            if ($project->client_type === 'company') {
+                $project->display_client = Company::find($project->client_id);
+            } else {
+                $project->display_client = Client::find($project->client_id);
+            }
+        }
 
         return view('projects.index', compact('projects'));
     }
@@ -36,7 +43,7 @@ class ProjectController extends Controller
                 'id' => 'client_'.$client->id,
                 'name' => $client->name,
                 'type' => 'client',
-                'type_icon' => '🧑‍🦱',
+                'type_icon' => '👤',
                 'details' => $client->company_name ? '('.$client->company_name.')' : '',
                 'model' => $client,
             ];
@@ -94,7 +101,7 @@ class ProjectController extends Controller
         $recipientType = $recipientParts[0];
         $recipientId = $recipientParts[1];
 
-        // Set client_id based on recipient type
+        // Set client_id and client_type based on recipient type
         if ($recipientType === 'client') {
             // Verify client exists
             $client = Client::find($recipientId);
@@ -104,6 +111,7 @@ class ProjectController extends Controller
                     ->withInput();
             }
             $validated['client_id'] = $recipientId;
+            $validated['client_type'] = 'client';
         } elseif ($recipientType === 'company') {
             // Verify company exists
             $company = Company::find($recipientId);
@@ -123,6 +131,7 @@ class ProjectController extends Controller
             }
 
             $validated['client_id'] = $client->id;
+            $validated['client_type'] = 'company';
         } else {
             return redirect()->back()
                 ->withErrors(['recipient_id' => 'Type de destinataire invalide.'])
@@ -144,12 +153,20 @@ class ProjectController extends Controller
     public function show(string $id)
     {
         $project = Project::with(['client', 'timeEntries.user'])->findOrFail($id);
-        $totalMinutes = $project->timeEntries->sum('duration_minutes');
 
+        // Récupérer l'utilisateur rattaché à client_id
+        $client = null;
+        if ($project->client_type === 'client') {
+            $client = Client::find($project->client_id);
+        } elseif ($project->client_type === 'company') {
+            $client = Company::find($project->client_id);
+        }
+
+        $totalMinutes = $project->timeEntries->sum('duration_minutes');
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;
 
-        return view('projects.show', compact('project', 'hours', 'minutes'));
+        return view('projects.show', compact('project', 'hours', 'minutes', 'client'));
     }
 
     /**
@@ -168,7 +185,7 @@ class ProjectController extends Controller
                 'id' => 'client_'.$client->id,
                 'name' => $client->name,
                 'type' => 'client',
-                'type_icon' => '🧑‍🦱',
+                'type_icon' => '👤',
                 'details' => $client->company_name ? '('.$client->company_name.')' : '',
                 'model' => $client,
             ];
@@ -193,11 +210,15 @@ class ProjectController extends Controller
         // Determine the selected recipient
         $selectedRecipientId = null;
 
-        // If the client has a company_id, select the company
-        if ($project->client && $project->client->company_id) {
-            $selectedRecipientId = 'company_'.$project->client->company_id;
+        // Set the selected recipient based on client_type
+        if ($project->client_type === 'company') {
+            // For company type, find the company associated with the client
+            $client = Client::find($project->client_id);
+            if ($client && $client->company_id) {
+                $selectedRecipientId = 'company_'.$client->company_id;
+            }
         } else {
-            // Otherwise select the client
+            // For client type, select the client directly
             $selectedRecipientId = 'client_'.$project->client_id;
         }
 
@@ -231,7 +252,7 @@ class ProjectController extends Controller
         $recipientType = $recipientParts[0];
         $recipientId = $recipientParts[1];
 
-        // Set client_id based on recipient type
+        // Set client_id and client_type based on recipient type
         if ($recipientType === 'client') {
             // Verify client exists
             $client = Client::find($recipientId);
@@ -241,6 +262,7 @@ class ProjectController extends Controller
                     ->withInput();
             }
             $validated['client_id'] = $recipientId;
+            $validated['client_type'] = 'client';
         } elseif ($recipientType === 'company') {
             // Verify company exists
             $company = Company::find($recipientId);
@@ -260,6 +282,7 @@ class ProjectController extends Controller
             }
 
             $validated['client_id'] = $client->id;
+            $validated['client_type'] = 'company';
         } else {
             return redirect()->back()
                 ->withErrors(['recipient_id' => 'Type de destinataire invalide.'])

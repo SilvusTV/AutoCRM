@@ -41,8 +41,9 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-500 dark:text-gray-400">
-                                                    <a href="{{ route('clients.show', $project->client->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                                        {{ $project->client->name }}
+                                                    <a href="{{ ($project->client_type === 'company')?route('companies.show', $project->display_client->id):route('clients.show', $project->display_client->id) }}"
+                                                       class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                        {{ $project->display_client->name }}
                                                     </a>
                                                 </div>
                                             </td>

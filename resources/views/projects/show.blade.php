@@ -37,8 +37,9 @@
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Client</p>
                             <p class="font-medium">
-                                <a href="{{ route('clients.show', $project->client->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                                    {{ $project->client->name }}
+                                <a href="{{ ($project->client_type === 'company')?route('companies.show',$client->id):route('clients.show', $client->id) }}"
+                                   class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                    {{ $client->name }}
                                 </a>
                             </p>
                         </div>

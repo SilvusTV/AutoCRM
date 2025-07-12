@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
     // Invoice routes
     Route::resource('invoices', InvoiceController::class);
     Route::get('invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+    Route::get('invoices/{id}/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
+    Route::post('invoices/{id}/validate', [InvoiceController::class, 'validateInvoice'])->name('invoices.validate');
+    Route::patch('invoices/{id}/status', [InvoiceController::class, 'updateStatus'])->name('invoices.update-status');
+    Route::get('quotes/create', [InvoiceController::class, 'createQuote'])->name('quotes.create');
 
     // Invoice Line routes
     Route::resource('invoice-lines', InvoiceLineController::class);
