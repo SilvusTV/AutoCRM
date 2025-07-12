@@ -105,6 +105,33 @@ class Invoice extends Model
 
         // Find the highest invoice number for the current year
         $highestNumber = self::where('invoice_number', 'like', $prefix.'%')
+            ->whereType('invoice')
+            ->orderBy('invoice_number', 'desc')
+            ->value('invoice_number');
+
+        if ($highestNumber) {
+            // Extract the numeric part and increment
+            $number = (int) substr($highestNumber, -3);
+            $number++;
+        } else {
+            $number = 1;
+        }
+
+        // Format with leading zeros
+        return $prefix.str_pad($number, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Generate a new quote number with the format FA{YEAR}_XXX.
+     */
+    public static function generateQuoteNumber(): string
+    {
+        $year = date('Y');
+        $prefix = "DE{$year}_";
+
+        // Find the highest invoice number for the current year
+        $highestNumber = self::where('invoice_number', 'like', $prefix.'%')
+            ->whereType('quote')
             ->orderBy('invoice_number', 'desc')
             ->value('invoice_number');
 

@@ -27,7 +27,7 @@
                                     class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
                                 <option value="">Sélectionnez un destinataire</option>
                                 @foreach($recipients as $recipient)
-                                    <option value="{{ $recipient['id'] }}" {{ old('recipient_id', $selectedRecipientId) == $recipient['id'] ? 'selected' : '' }}>
+                                    <option value="{{ $recipient['id'] }}" {{ ((old('recipient_id', $selectedRecipientId) == $recipient['id']) && ($project->client_type == $recipient['type'])) ? 'selected' : '' }}>
                                         {{ $recipient['type_icon'] }} {{ $recipient['name'] }} {{ $recipient['details'] }}
                                     </option>
                                 @endforeach

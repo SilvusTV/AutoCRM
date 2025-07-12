@@ -78,8 +78,9 @@ class InvoiceController extends Controller
 
         // Generate a new invoice number
         $invoiceNumber = Invoice::generateInvoiceNumber();
+        $quoteNumber = Invoice::generateQuoteNumber();
 
-        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber'));
+        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber', 'quoteNumber'));
     }
 
     /**
@@ -115,7 +116,7 @@ class InvoiceController extends Controller
             'conclusion_text' => 'nullable|string',
             'footer_text' => 'nullable|string',
             'notes' => 'nullable|string',
-            'project_name' => 'required_if:type,quote|nullable|string|max:255',
+            'project_name' => 'required_if:project_id,null,type,quote|nullable|string|max:255',
         ]);
 
         // Parse the recipient_id to determine type and ID
@@ -130,41 +131,40 @@ class InvoiceController extends Controller
         $recipientId = $recipientParts[1];
 
         // Set client_id or company_id based on recipient type
-        $client_id = null;
-        $company_id = null;
+        $client = null;
 
         if ($recipientType === 'client') {
             // Verify client exists
-            $client = Client::find($recipientId);
-            if (! $client) {
+            $clientFind = Client::find($recipientId);
+            if (! $clientFind) {
                 return redirect()->back()
                     ->withErrors(['recipient_id' => 'Client non trouvé.'])
                     ->withInput();
             }
-            $client_id = $recipientId;
+            $client = $clientFind;
         } elseif ($recipientType === 'company') {
             // Verify company exists
-            $company = Company::find($recipientId);
-            if (! $company) {
+            $companyFind = Company::find($recipientId);
+            if (! $companyFind) {
                 return redirect()->back()
                     ->withErrors(['recipient_id' => 'Entreprise non trouvée.'])
                     ->withInput();
             }
-            $company_id = $recipientId;
+            $client = $companyFind;
         } else {
             return redirect()->back()
                 ->withErrors(['recipient_id' => 'Type de destinataire invalide.'])
                 ->withInput();
         }
 
-        // If this is a quote and we need to create a project
+        // If this is a quote and no project is selected, create a new project
         $project_id = $validated['project_id'];
-        if ($validated['type'] === 'quote' && isset($validated['project_name'])) {
+        if ($validated['type'] === 'quote' && ! $project_id && isset($validated['project_name'])) {
             // Create a new project
             $project = new Project;
             $project->name = $validated['project_name'];
-            $project->client_id = $client_id;
-            $project->company_id = $company_id;
+            $project->client_id = $client->id;
+            $project->client_type = $recipientType;
             $project->status = 'en_cours'; // Set status to in progress
             $project->save();
 
@@ -177,8 +177,14 @@ class InvoiceController extends Controller
 
         // Create the invoice/quote
         $invoice = new Invoice;
-        $invoice->client_id = $client_id;
-        $invoice->company_id = $company_id;
+        if ($recipientType === 'client') {
+            $invoice->client_id = $client->id;
+            if ($client->company_id) {
+                $invoice->company_id = $client->company_id;
+            }
+        } elseif ($recipientType === 'company') {
+            $invoice->company_id = $client->id;
+        }
         $invoice->project_id = $project_id;
         $invoice->invoice_number = $validated['invoice_number'];
         $invoice->type = $validated['type'];

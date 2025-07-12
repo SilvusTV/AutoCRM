@@ -57,10 +57,11 @@
                         </div>
 
                         <!-- Project -->
-                        <div id="existing-project-div"
-                             class="{{ isset($invoiceType) && $invoiceType === 'quote' ? 'hidden' : '' }}">
+                        <div id="existing-project-div">
                             <x-input-label for="project_id" :value="__('Projet existant')"/>
-                            <select id="project_id" name="project_id" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                            <select id="project_id" name="project_id"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm"
+                                    onchange="toggleProjectNameField()">
                                 <option value="">Sélectionnez un projet</option>
                                 @foreach($projects as $project)
                                     <option value="{{ $project->id }}" {{ old('project_id', $selectedProjectId) == $project->id ? 'selected' : '' }}>
@@ -74,7 +75,7 @@
 
                         <!-- New Project Name (for quotes) -->
                         <div id="new-project-div"
-                             class="{{ isset($invoiceType) && $invoiceType === 'quote' ? '' : 'hidden' }}">
+                             class="{{ isset($invoiceType) && $invoiceType === 'quote' ? (old('project_id', $selectedProjectId) ? 'hidden' : '') : 'hidden' }}">
                             <x-input-label for="project_name" :value="__('Nom du nouveau projet')"/>
                             <x-text-input id="project_name" class="block mt-1 w-full" type="text" name="project_name"
                                           :value="old('project_name')"/>
@@ -92,7 +93,9 @@
                         <div>
                             <x-input-label for="invoice_number" :value="__('Numéro de facture')" />
                             <x-text-input id="invoice_number" class="block mt-1 w-full bg-gray-100" type="text"
-                                          name="invoice_number" :value="old('invoice_number', $invoiceNumber)" required
+                                          name="invoice_number"
+                                          :value="old('invoice_number', isset($invoiceType) && $invoiceType === 'quote' ? $quoteNumber : $invoiceNumber)"
+                                          required
                                           readonly/>
                             <x-input-error :messages="$errors->get('invoice_number')" class="mt-2" />
                         </div>
@@ -332,6 +335,9 @@
         // Initial toggle of bank account field
         toggleBankAccount();
 
+        // Initial toggle of project name field
+        toggleProjectNameField();
+
         // Add event listener for TVA rate changes
         document.getElementById('tva_rate').addEventListener('change', updateTvaRateDisplay);
         document.getElementById('tva_non_applicable').addEventListener('change', updateTvaRateDisplay);
@@ -369,6 +375,19 @@
 
       function formatCurrency(value) {
         return new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'EUR'}).format(value);
+      }
+
+      function toggleProjectNameField() {
+        const invoiceType = document.querySelector('input[name="type"]').value;
+        const projectId = document.getElementById('project_id').value;
+        const newProjectDiv = document.getElementById('new-project-div');
+
+        // Only show the project name field for quotes when no project is selected
+        if (invoiceType === 'quote' && !projectId) {
+          newProjectDiv.classList.remove('hidden');
+        } else {
+          newProjectDiv.classList.add('hidden');
+        }
       }
     </script>
 </x-app-layout>
