@@ -66,6 +66,7 @@ class InvoiceController extends Controller
         $selectedClientId = $request->query('client_id');
         $selectedProjectId = $request->query('project_id');
         $selectedCompanyId = $request->query('company_id');
+        $invoiceType = $request->query('type', 'invoice');
 
         // Determine the selected recipient
         $selectedRecipientId = null;
@@ -75,7 +76,20 @@ class InvoiceController extends Controller
             $selectedRecipientId = 'company_'.$selectedCompanyId;
         }
 
-        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId'));
+        // Generate a new invoice number
+        $invoiceNumber = Invoice::generateInvoiceNumber();
+
+        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber'));
+    }
+
+    /**
+     * Show the form for creating a new quote.
+     */
+    public function createQuote(Request $request)
+    {
+        $request->merge(['type' => 'quote']);
+
+        return $this->create($request);
     }
 
     /**
@@ -85,15 +99,23 @@ class InvoiceController extends Controller
     {
         $validated = $request->validate([
             'recipient_id' => 'required|string',
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
             'invoice_number' => 'required|string|max:255|unique:invoices',
+            'type' => 'required|in:invoice,quote',
             'status' => 'required|in:brouillon,envoyee,payee',
-            'total_ht' => 'required|numeric|min:0',
             'tva_rate' => 'required|numeric|min:0|max:100',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
             'payment_date' => 'nullable|date|after_or_equal:issue_date',
+            'payment_terms' => 'required|in:immediate,15_days,30_days,45_days,60_days,end_of_month',
+            'payment_method' => 'required|in:bank_transfer,check,cash,credit_card,paypal',
+            'late_fees' => 'required|in:none,legal_rate,fixed_percent',
+            'bank_account' => 'nullable|string|max:255',
+            'intro_text' => 'nullable|string',
+            'conclusion_text' => 'nullable|string',
+            'footer_text' => 'nullable|string',
             'notes' => 'nullable|string',
+            'project_name' => 'required_if:type,quote|nullable|string|max:255',
         ]);
 
         // Parse the recipient_id to determine type and ID
@@ -135,27 +157,59 @@ class InvoiceController extends Controller
                 ->withInput();
         }
 
-        // Calculate total TTC
-        $totalTTC = $validated['total_ht'] * (1 + ($validated['tva_rate'] / 100));
+        // If this is a quote and we need to create a project
+        $project_id = $validated['project_id'];
+        if ($validated['type'] === 'quote' && isset($validated['project_name'])) {
+            // Create a new project
+            $project = new Project;
+            $project->name = $validated['project_name'];
+            $project->client_id = $client_id;
+            $project->company_id = $company_id;
+            $project->status = 'en_cours'; // Set status to in progress
+            $project->save();
 
-        // Create the invoice
+            $project_id = $project->id;
+        }
+
+        // Initialize totals to 0 since we're not adding lines yet
+        $totalHT = 0;
+        $totalTTC = 0;
+
+        // Create the invoice/quote
         $invoice = new Invoice;
         $invoice->client_id = $client_id;
         $invoice->company_id = $company_id;
-        $invoice->project_id = $validated['project_id'];
+        $invoice->project_id = $project_id;
         $invoice->invoice_number = $validated['invoice_number'];
+        $invoice->type = $validated['type'];
         $invoice->status = $validated['status'];
-        $invoice->total_ht = $validated['total_ht'];
+        $invoice->is_validated = false; // Always start as not validated
+        $invoice->total_ht = $totalHT;
         $invoice->tva_rate = $validated['tva_rate'];
         $invoice->total_ttc = $totalTTC;
         $invoice->issue_date = $validated['issue_date'];
         $invoice->due_date = $validated['due_date'];
         $invoice->payment_date = $validated['payment_date'] ?? null;
+
+        // Payment terms fields
+        $invoice->payment_terms = $validated['payment_terms'];
+        $invoice->payment_method = $validated['payment_method'];
+        $invoice->late_fees = $validated['late_fees'];
+        $invoice->bank_account = $validated['bank_account'] ?? null;
+
+        // Document text fields
+        $invoice->intro_text = $validated['intro_text'] ?? null;
+        $invoice->conclusion_text = $validated['conclusion_text'] ?? null;
+        $invoice->footer_text = $validated['footer_text'] ?? null;
+
         $invoice->notes = $validated['notes'] ?? null;
         $invoice->save();
 
-        return redirect()->route('invoices.show', $invoice->id)
-            ->with('success', 'Facture créée avec succès.');
+        $successMessage = $validated['type'] === 'invoice' ? 'Facture créée avec succès. Vous pouvez maintenant ajouter des lignes.' : 'Devis créé avec succès. Vous pouvez maintenant ajouter des lignes.';
+
+        // Redirect to add invoice lines
+        return redirect()->route('invoice-lines.create', ['invoice_id' => $invoice->id])
+            ->with('success', $successMessage);
     }
 
     /**
@@ -174,10 +228,20 @@ class InvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->findOrFail($id);
+
+        // Prevent editing of validated invoices
+        if ($invoice->isValidated()) {
+            return redirect()->route('invoices.preview', $invoice->id)
+                ->with('error', 'Les factures validées ne peuvent pas être modifiées.');
+        }
+
         $clients = Client::orderBy('name')->get();
         $companies = Company::orderBy('name')->get();
-        $projects = Project::orderBy('name')->get();
+        $projects = Project::where('status', '!=', 'archive')
+            ->orderBy('name')
+            ->get();
 
         // Create a combined list of recipients (clients and companies)
         $recipients = [];
@@ -187,7 +251,7 @@ class InvoiceController extends Controller
                 'name' => $client->name,
                 'type' => 'client',
                 'type_icon' => '👤',
-                'details' => $client->company_name ? '('.$client->company_name.')' : '',
+                'details' => $client->company ? '('.$client->company->name.')' : '',
                 'model' => $client,
             ];
         }
@@ -216,7 +280,12 @@ class InvoiceController extends Controller
             $selectedRecipientId = 'company_'.$invoice->company_id;
         }
 
-        return view('invoices.edit', compact('invoice', 'clients', 'companies', 'projects', 'recipients', 'selectedRecipientId'));
+        $selectedProjectId = $invoice->project_id;
+        $invoiceType = $invoice->type;
+        $invoiceNumber = $invoice->invoice_number;
+
+        // Use the create view but with the invoice data
+        return view('invoices.create', compact('invoice', 'clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber'));
     }
 
     /**
@@ -226,17 +295,30 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($id);
 
+        // Prevent updating of validated invoices
+        if ($invoice->isValidated()) {
+            return redirect()->route('invoices.preview', $invoice->id)
+                ->with('error', 'Les factures validées ne peuvent pas être modifiées.');
+        }
+
         $validated = $request->validate([
             'recipient_id' => 'required|string',
             'project_id' => 'required|exists:projects,id',
             'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,'.$id,
+            'type' => 'required|in:invoice,quote',
             'status' => 'required|in:brouillon,envoyee,payee',
-            'total_ht' => 'required|numeric|min:0',
             'tva_rate' => 'required|numeric|min:0|max:100',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
             'payment_date' => 'nullable|date|after_or_equal:issue_date',
             'notes' => 'nullable|string',
+            'payment_terms' => 'required|in:immediate,15_days,30_days,45_days,60_days,end_of_month',
+            'payment_method' => 'required|in:bank_transfer,check,cash,credit_card,paypal',
+            'late_fees' => 'required|in:none,legal_rate,fixed_percent',
+            'bank_account' => 'nullable|string|max:255',
+            'intro_text' => 'nullable|string',
+            'conclusion_text' => 'nullable|string',
+            'footer_text' => 'nullable|string',
         ]);
 
         // Parse the recipient_id to determine type and ID
@@ -278,26 +360,37 @@ class InvoiceController extends Controller
                 ->withInput();
         }
 
-        // Calculate total TTC
-        $totalTTC = $validated['total_ht'] * (1 + ($validated['tva_rate'] / 100));
-
         // Update the invoice
         $invoice->client_id = $client_id;
         $invoice->company_id = $company_id;
         $invoice->project_id = $validated['project_id'];
         $invoice->invoice_number = $validated['invoice_number'];
+        $invoice->type = $validated['type'];
         $invoice->status = $validated['status'];
-        $invoice->total_ht = $validated['total_ht'];
         $invoice->tva_rate = $validated['tva_rate'];
-        $invoice->total_ttc = $totalTTC;
         $invoice->issue_date = $validated['issue_date'];
         $invoice->due_date = $validated['due_date'];
         $invoice->payment_date = $validated['payment_date'] ?? null;
         $invoice->notes = $validated['notes'] ?? null;
+
+        // Payment terms fields
+        $invoice->payment_terms = $validated['payment_terms'];
+        $invoice->payment_method = $validated['payment_method'];
+        $invoice->late_fees = $validated['late_fees'];
+        $invoice->bank_account = $validated['bank_account'] ?? null;
+
+        // Document text fields
+        $invoice->intro_text = $validated['intro_text'] ?? null;
+        $invoice->conclusion_text = $validated['conclusion_text'] ?? null;
+        $invoice->footer_text = $validated['footer_text'] ?? null;
+
         $invoice->save();
 
-        return redirect()->route('invoices.show', $invoice->id)
-            ->with('success', 'Facture mise à jour avec succès.');
+        $successMessage = $invoice->isQuote() ? 'Devis mis à jour avec succès. Vous pouvez maintenant gérer les lignes.' : 'Facture mise à jour avec succès. Vous pouvez maintenant gérer les lignes.';
+
+        // Redirect to manage invoice lines
+        return redirect()->route('invoice-lines.create', ['invoice_id' => $invoice->id])
+            ->with('success', $successMessage);
     }
 
     /**
@@ -306,6 +399,13 @@ class InvoiceController extends Controller
     public function destroy(string $id)
     {
         $invoice = Invoice::findOrFail($id);
+
+        // Prevent deletion of validated invoices
+        if ($invoice->isValidated()) {
+            return redirect()->route('invoices.preview', $invoice->id)
+                ->with('error', 'Les factures validées ne peuvent pas être supprimées.');
+        }
+
         $invoice->delete();
 
         return redirect()->route('invoices.index')
@@ -322,6 +422,42 @@ class InvoiceController extends Controller
 
         $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
 
-        return $pdf->download('facture_'.$invoice->invoice_number.'.pdf');
+        $prefix = $invoice->isQuote() ? 'devis_' : 'facture_';
+
+        return $pdf->download($prefix.$invoice->invoice_number.'.pdf');
+    }
+
+    /**
+     * Preview the invoice before finalizing
+     */
+    public function preview(string $id)
+    {
+        $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->findOrFail($id);
+
+        return view('invoices.preview', compact('invoice'));
+    }
+
+    /**
+     * Validate the invoice, making it non-modifiable
+     */
+    public function validateInvoice(string $id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        // Check if the invoice already has lines
+        if ($invoice->invoiceLines->count() === 0) {
+            return redirect()->route('invoices.preview', $invoice->id)
+                ->with('error', 'Impossible de valider une facture sans lignes.');
+        }
+
+        // Mark the invoice as validated
+        $invoice->is_validated = true;
+        $invoice->save();
+
+        $successMessage = $invoice->isQuote() ? 'Devis validé avec succès.' : 'Facture validée avec succès.';
+
+        return redirect()->route('invoices.preview', $invoice->id)
+            ->with('success', $successMessage);
     }
 }

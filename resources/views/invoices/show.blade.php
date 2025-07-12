@@ -120,16 +120,50 @@
                         <a href="{{ route('invoices.pdf', $invoice->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             {{ __('Télécharger PDF') }}
                         </a>
-                        <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette facture?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                {{ __('Supprimer') }}
-                            </button>
-                        </form>
+
+                        @if(!$invoice->isValidated())
+                            <!-- Validation Button -->
+                            <form action="{{ route('invoices.validate', $invoice->id) }}" method="POST" class="inline"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir valider cette facture? Une fois validée, elle ne pourra plus être modifiée.');">
+                                @csrf
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    {{ __('Valider') }}
+                                </button>
+                            </form>
+
+                            <!-- Edit Button -->
+                            <a href="{{ route('invoices.edit', $invoice->id) }}"
+                               class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 focus:bg-yellow-700 active:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                {{ __('Modifier') }}
+                            </a>
+
+                            <!-- Delete Button -->
+                            <form action="{{ route('invoices.destroy', $invoice->id) }}" method="POST" class="inline"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette facture?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    {{ __('Supprimer') }}
+                                </button>
+                            </form>
+                        @else
+                            <!-- Validated Badge -->
+                            <span class="inline-flex items-center px-4 py-2 bg-green-100 border border-green-200 rounded-md font-semibold text-xs text-green-800 uppercase">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                          clip-rule="evenodd"></path>
+                                </svg>
+                                {{ __('Document validé') }}
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
+
 
             <!-- Invoice Lines -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
@@ -164,14 +198,34 @@
                                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($line->total_ht, 2, ',', ' ') }} €</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex space-x-2">
-                                                    <button type="button" class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 edit-line" data-id="{{ $line->id }}" data-description="{{ $line->description }}" data-quantity="{{ $line->quantity }}" data-unit-price="{{ $line->unit_price }}">Modifier</button>
-                                                    <form action="{{ route('invoice-lines.destroy', $line->id) }}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ligne?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Supprimer</button>
-                                                    </form>
-                                                </div>
+                                                @if(!$invoice->isValidated())
+                                                    <div class="flex space-x-2">
+                                                        <button type="button"
+                                                                class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 edit-line"
+                                                                data-id="{{ $line->id }}"
+                                                                data-description="{{ $line->description }}"
+                                                                data-quantity="{{ $line->quantity }}"
+                                                                data-unit-price="{{ $line->unit_price }}"
+                                                                data-item-type="{{ $line->item_type ?? 'service' }}"
+                                                                data-is-expense="{{ $line->is_expense ? 'true' : 'false' }}"
+                                                                data-discount-percent="{{ $line->discount_percent ?? 0 }}"
+                                                                data-tva-rate="{{ $line->tva_rate ?? $invoice->tva_rate }}">
+                                                            Modifier
+                                                        </button>
+                                                        <form action="{{ route('invoice-lines.destroy', $line->id) }}"
+                                                              method="POST" class="inline"
+                                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ligne?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                                                Supprimer
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400">Document validé</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -203,6 +257,7 @@
                 </div>
             </div>
 
+                @if(!$invoice->isValidated())
             <!-- Add Invoice Line Form -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -211,6 +266,34 @@
                     <form method="POST" action="{{ route('invoice-lines.store') }}" class="space-y-6" id="add-line-form">
                         @csrf
                         <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <!-- Item Type -->
+                            <div>
+                                <x-input-label for="item_type" :value="__('Type')"/>
+                                <select id="item_type" name="item_type"
+                                        class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                    <option value="service" {{ old('item_type') == 'service' ? 'selected' : '' }}>
+                                        Service
+                                    </option>
+                                    <option value="product" {{ old('item_type') == 'product' ? 'selected' : '' }}>
+                                        Produit
+                                    </option>
+                                </select>
+                                <x-input-error :messages="$errors->get('item_type')" class="mt-2"/>
+                            </div>
+
+                            <!-- Is Expense -->
+                            <div class="flex items-center mt-8">
+                                <label for="is_expense" class="inline-flex items-center">
+                                    <input id="is_expense" type="checkbox" name="is_expense"
+                                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+                                           value="1" {{ old('is_expense') ? 'checked' : '' }}>
+                                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Débours') }}</span>
+                                </label>
+                                <x-input-error :messages="$errors->get('is_expense')" class="mt-2"/>
+                            </div>
+                        </div>
 
                         <!-- Description -->
                         <div>
@@ -235,6 +318,28 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Discount Percent -->
+                            <div>
+                                <x-input-label for="discount_percent" :value="__('Réduction (%)')"/>
+                                <x-text-input id="discount_percent" class="block mt-1 w-full" type="number"
+                                              name="discount_percent" :value="old('discount_percent', 0)" step="0.01"
+                                              min="0" max="100"/>
+                                <x-input-error :messages="$errors->get('discount_percent')" class="mt-2"/>
+                            </div>
+
+                            <!-- TVA Rate -->
+                            <div>
+                                <x-input-label for="tva_rate" :value="__('TVA (%) - optionnel')"/>
+                                <x-text-input id="tva_rate" class="block mt-1 w-full" type="number" name="tva_rate"
+                                              :value="old('tva_rate')" step="0.01" min="0" max="100"
+                                              placeholder="Taux global par défaut"/>
+                                <p class="mt-1 text-xs text-gray-500">Laissez vide pour utiliser le taux global
+                                    ({{ $invoice->tva_rate }}%)</p>
+                                <x-input-error :messages="$errors->get('tva_rate')" class="mt-2"/>
+                            </div>
+                        </div>
+
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ml-4">
                                 {{ __('Ajouter') }}
@@ -243,6 +348,7 @@
                     </form>
                 </div>
             </div>
+                @endif
 
             <!-- Edit Invoice Line Modal (hidden by default) -->
             <div id="edit-line-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden" style="z-index: 50;">
@@ -253,13 +359,33 @@
                         @csrf
                         @method('PUT')
 
+                        <!-- Item Type -->
+                        <div class="mb-4">
+                            <x-input-label for="edit_item_type" :value="__('Type')"/>
+                            <select id="edit_item_type" name="item_type"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="service">Service</option>
+                                <option value="product">Produit</option>
+                            </select>
+                        </div>
+
+                        <!-- Is Expense -->
+                        <div class="mb-4">
+                            <label for="edit_is_expense" class="inline-flex items-center">
+                                <input id="edit_is_expense" type="checkbox" name="is_expense"
+                                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+                                       value="1">
+                                <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Débours') }}</span>
+                            </label>
+                        </div>
+
                         <!-- Description -->
-                        <div>
+                        <div class="mb-4">
                             <x-input-label for="edit_description" :value="__('Description')" />
                             <x-text-input id="edit_description" class="block mt-1 w-full" type="text" name="description" required />
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <!-- Quantity -->
                             <div>
                                 <x-input-label for="edit_quantity" :value="__('Quantité')" />
@@ -270,6 +396,23 @@
                             <div>
                                 <x-input-label for="edit_unit_price" :value="__('Prix unitaire (€)')" />
                                 <x-text-input id="edit_unit_price" class="block mt-1 w-full" type="number" name="unit_price" step="0.01" min="0" required />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Discount Percent -->
+                            <div>
+                                <x-input-label for="edit_discount_percent" :value="__('Réduction (%)')"/>
+                                <x-text-input id="edit_discount_percent" class="block mt-1 w-full" type="number"
+                                              name="discount_percent" step="0.01" min="0" max="100" value="0"/>
+                            </div>
+
+                            <!-- TVA Rate -->
+                            <div>
+                                <x-input-label for="edit_tva_rate" :value="__('TVA (%) - optionnel')"/>
+                                <x-text-input id="edit_tva_rate" class="block mt-1 w-full" type="number" name="tva_rate"
+                                              step="0.01" min="0" max="100" placeholder="Taux global par défaut"/>
+                                <p class="mt-1 text-xs text-gray-500">Laissez vide pour utiliser le taux global</p>
                             </div>
                         </div>
 
@@ -300,11 +443,37 @@
                     const description = this.getAttribute('data-description');
                     const quantity = this.getAttribute('data-quantity');
                     const unitPrice = this.getAttribute('data-unit-price');
+                  const itemType = this.getAttribute('data-item-type');
+                  const isExpense = this.getAttribute('data-is-expense');
+                  const discountPercent = this.getAttribute('data-discount-percent');
+                  const tvaRate = this.getAttribute('data-tva-rate');
 
                     editForm.action = `/invoice-lines/${id}`;
                     document.getElementById('edit_description').value = description;
                     document.getElementById('edit_quantity').value = quantity;
                     document.getElementById('edit_unit_price').value = unitPrice;
+
+                  // Set item type
+                  const itemTypeSelect = document.getElementById('edit_item_type');
+                  for (let i = 0; i < itemTypeSelect.options.length; i++) {
+                    if (itemTypeSelect.options[i].value === itemType) {
+                      itemTypeSelect.selectedIndex = i;
+                      break;
+                    }
+                  }
+
+                  // Set is_expense checkbox
+                  document.getElementById('edit_is_expense').checked = isExpense === 'true';
+
+                  // Set discount percent
+                  document.getElementById('edit_discount_percent').value = discountPercent;
+
+                  // Set TVA rate if provided
+                  if (tvaRate) {
+                    document.getElementById('edit_tva_rate').value = tvaRate;
+                  } else {
+                    document.getElementById('edit_tva_rate').value = '';
+                  }
 
                     editModal.classList.remove('hidden');
                 });
