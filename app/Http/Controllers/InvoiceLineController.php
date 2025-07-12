@@ -125,7 +125,7 @@ class InvoiceLineController extends Controller
 
         // Check if the invoice is validated
         if ($invoice->isValidated()) {
-            return redirect()->route('invoices.show', $invoice->id)
+            return redirect()->route('invoices.preview', $invoice->id)
                 ->with('error', 'Impossible de modifier les lignes d\'une facture validée.');
         }
 
@@ -165,7 +165,7 @@ class InvoiceLineController extends Controller
         $invoice->total_ttc = $newTotalHT * (1 + ($invoice->tva_rate / 100));
         $invoice->save();
 
-        return redirect()->route('invoices.show', $invoice->id)
+        return redirect()->route('invoices.preview', $invoice->id)
             ->with('success', 'Ligne de facture mise à jour avec succès.');
     }
 
@@ -179,7 +179,7 @@ class InvoiceLineController extends Controller
 
         // Check if the invoice is validated
         if ($invoice->isValidated()) {
-            return redirect()->route('invoices.show', $invoice->id)
+            return redirect()->route('invoices.preview', $invoice->id)
                 ->with('error', 'Impossible de supprimer les lignes d\'une facture validée.');
         }
 
@@ -192,7 +192,7 @@ class InvoiceLineController extends Controller
         $invoice->total_ttc = $newTotalHT * (1 + ($invoice->tva_rate / 100));
         $invoice->save();
 
-        return redirect()->route('invoices.show', $invoice->id)
+        return redirect()->route('invoices.preview', $invoice->id)
             ->with('success', 'Ligne de facture supprimée avec succès.');
     }
 }

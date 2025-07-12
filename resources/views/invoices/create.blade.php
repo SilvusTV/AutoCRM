@@ -33,7 +33,7 @@
                     <input type="hidden" name="status" value="{{ $invoice->status }}"/>
                 @else
                     <!-- Status is always draft when creating -->
-                    <input type="hidden" name="status" value="brouillon"/>
+                    <input type="hidden" name="status" value="draft"/>
                 @endif
 
                 <!-- Section: Destinataire -->

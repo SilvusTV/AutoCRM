@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Facture {{ $invoice->invoice_number }}</title>
     <style>
-        .brouillon-container {
+        .preview-container {
             position: absolute;
             bottom: 25%;
             left: 50%;
@@ -18,7 +18,7 @@
             user-select: none;
         }
 
-        .brouillon-text {
+        .preview-text {
             text-align: center;
             color: rgba(200, 200, 200, 0.25);
             font-weight: bold;
@@ -153,9 +153,9 @@
         <p>Date : {{ $invoice->issue_date->format('d/m/Y') }}</p>
     </div>
 </header>
-@if($invoice->status === 'brouillon')
-    <div class="brouillon-container">
-        <span class="brouillon-text">
+@if(!$invoice->is_validated)
+    <div class="preview-container">
+        <span class="preview-text">
             Provisoire
         </span>
     </div>

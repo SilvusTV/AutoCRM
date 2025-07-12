@@ -102,7 +102,7 @@ class InvoiceController extends Controller
             'project_id' => 'nullable|exists:projects,id',
             'invoice_number' => 'required|string|max:255|unique:invoices',
             'type' => 'required|in:invoice,quote',
-            'status' => 'required|in:brouillon,envoyee,payee',
+            'status' => 'required|in:draft,sent,paid,cancelled,overdue',
             'tva_rate' => 'required|numeric|min:0|max:100',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
@@ -217,10 +217,8 @@ class InvoiceController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
-            ->findOrFail($id);
-
-        return view('invoices.show', compact('invoice'));
+        // Redirect to preview instead of show
+        return redirect()->route('invoices.preview', $id);
     }
 
     /**
@@ -306,7 +304,7 @@ class InvoiceController extends Controller
             'project_id' => 'required|exists:projects,id',
             'invoice_number' => 'required|string|max:255|unique:invoices,invoice_number,'.$id,
             'type' => 'required|in:invoice,quote',
-            'status' => 'required|in:brouillon,envoyee,payee',
+            'status' => 'required|in:draft,sent,paid,cancelled,overdue',
             'tva_rate' => 'required|numeric|min:0|max:100',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
@@ -456,6 +454,33 @@ class InvoiceController extends Controller
         $invoice->save();
 
         $successMessage = $invoice->isQuote() ? 'Devis validé avec succès.' : 'Facture validée avec succès.';
+
+        return redirect()->route('invoices.preview', $invoice->id)
+            ->with('success', $successMessage);
+    }
+
+    /**
+     * Update just the status of an invoice, even if it's validated
+     */
+    public function updateStatus(Request $request, string $id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $validated = $request->validate([
+            'status' => 'required|in:draft,sent,paid,cancelled,overdue',
+        ]);
+
+        // Update only the status
+        $invoice->status = $validated['status'];
+        $invoice->save();
+
+        // If status is set to paid and payment_date is not set, update it
+        if ($validated['status'] === 'paid' && ! $invoice->payment_date) {
+            $invoice->payment_date = now();
+            $invoice->save();
+        }
+
+        $successMessage = $invoice->isQuote() ? 'Statut du devis mis à jour avec succès.' : 'Statut de la facture mis à jour avec succès.';
 
         return redirect()->route('invoices.preview', $invoice->id)
             ->with('success', $successMessage);

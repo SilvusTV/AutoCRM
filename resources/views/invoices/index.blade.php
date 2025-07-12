@@ -73,10 +73,24 @@
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    @if($invoice->status == 'brouillon') bg-gray-100 text-gray-800 
-                                                    @elseif($invoice->status == 'envoyee') bg-blue-100 text-blue-800 
+                                                    @if($invoice->status == 'draft') bg-gray-100 text-gray-800
+                                                    @elseif($invoice->status == 'sent') bg-blue-100 text-blue-800
+                                                    @elseif($invoice->status == 'cancelled') bg-red-100 text-red-800
+                                                    @elseif($invoice->status == 'overdue') bg-yellow-100 text-yellow-800
                                                     @else bg-green-100 text-green-800 @endif">
-                                                    {{ $invoice->status }}
+                                                    @if($invoice->status == 'draft')
+                                                        Brouillon
+                                                    @elseif($invoice->status == 'sent')
+                                                        Envoyée
+                                                    @elseif($invoice->status == 'paid')
+                                                        Payée
+                                                    @elseif($invoice->status == 'cancelled')
+                                                        Annulée
+                                                    @elseif($invoice->status == 'overdue')
+                                                        Expirée
+                                                    @else
+                                                        {{ $invoice->status }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">

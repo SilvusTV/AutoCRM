@@ -36,6 +36,8 @@ return new class extends Migration
 
             // Add field for invoice validation
             $table->boolean('is_validated')->default(false)->after('status');
+
+            $table->enum('status', ['draft', 'sent', 'paid', 'cancelled', 'overdue'])->default('draft')->change();
         });
     }
 
@@ -54,6 +56,7 @@ return new class extends Migration
             $table->dropColumn('conclusion_text');
             $table->dropColumn('footer_text');
             $table->dropColumn('is_validated');
+            $table->enum('status', ['brouilon', 'envoyee', 'payee'])->default('brouillon')->change();
         });
     }
 };

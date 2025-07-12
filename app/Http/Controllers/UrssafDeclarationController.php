@@ -36,7 +36,7 @@ class UrssafDeclarationController extends Controller
         // Calculate the total revenue for the current month from invoices
         $monthlyRevenue = Invoice::whereMonth('issue_date', $currentMonth)
             ->whereYear('issue_date', $currentYear)
-            ->where('status', 'payee')
+            ->where('status', 'paid')
             ->sum('total_ht');
 
         return view('urssaf-declarations.create', compact('currentMonth', 'currentYear', 'defaultChargeRate', 'monthlyRevenue'));

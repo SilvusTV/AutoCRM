@@ -79,14 +79,57 @@
 
                         <div>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Statut</p>
-                            <p class="font-medium">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    @if($invoice->status == 'brouillon') bg-gray-100 text-gray-800 
-                                    @elseif($invoice->status == 'envoyee') bg-blue-100 text-blue-800 
-                                    @else bg-green-100 text-green-800 @endif">
-                                    {{ $invoice->status }}
-                                </span>
-                            </p>
+                            <div class="flex items-center space-x-2">
+                                <p class="font-medium">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        @if($invoice->status == 'draft') bg-gray-100 text-gray-800 
+                                        @elseif($invoice->status == 'sent') bg-blue-100 text-blue-800 
+                                        @elseif($invoice->status == 'paid') bg-green-100 text-green-800
+                                        @elseif($invoice->status == 'cancelled') bg-red-100 text-red-800
+                                        @elseif($invoice->status == 'overdue') bg-yellow-100 text-yellow-800
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        @if($invoice->status == 'draft')
+                                            Brouillon
+                                        @elseif($invoice->status == 'sent')
+                                            Envoyée
+                                        @elseif($invoice->status == 'paid')
+                                            Payée
+                                        @elseif($invoice->status == 'cancelled')
+                                            Annulée
+                                        @elseif($invoice->status == 'overdue')
+                                            Expirée
+                                        @else
+                                            {{ $invoice->status }}
+                                        @endif
+                                    </span>
+                                </p>
+                                <form action="{{ route('invoices.update-status', $invoice->id) }}" method="POST"
+                                      class="inline-flex items-center">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="status"
+                                            class="ml-2 rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm text-sm">
+                                        <option value="draft" {{ $invoice->status == 'draft' ? 'selected' : '' }}>
+                                            Brouillon
+                                        </option>
+                                        <option value="sent" {{ $invoice->status == 'sent' ? 'selected' : '' }}>
+                                            Envoyée
+                                        </option>
+                                        <option value="paid" {{ $invoice->status == 'paid' ? 'selected' : '' }}>Payée
+                                        </option>
+                                        <option value="cancelled" {{ $invoice->status == 'cancelled' ? 'selected' : '' }}>
+                                            Annulée
+                                        </option>
+                                        <option value="overdue" {{ $invoice->status == 'overdue' ? 'selected' : '' }}>
+                                            Expirée
+                                        </option>
+                                    </select>
+                                    <button type="submit"
+                                            class="ml-2 inline-flex items-center px-2 py-1 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                        {{ __('Mettre à jour') }}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                         <div>
