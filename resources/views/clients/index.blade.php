@@ -39,7 +39,16 @@
                                                 <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $client->name }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $client->company ?? '-' }}</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                                    @if($client->company)
+                                                        <a href="{{ route('companies.show', $client->company->id) }}"
+                                                           class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                                            {{ $client->company->name }}
+                                                        </a>
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ $client->email }}</div>

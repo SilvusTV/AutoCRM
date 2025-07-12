@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceLineController;
 use App\Http\Controllers\ProfileController;
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
     // Client routes
     Route::resource('clients', ClientController::class);
 
+    // Company routes
+    Route::resource('companies', CompanyController::class);
+
     // Project routes
     Route::resource('projects', ProjectController::class);
 
@@ -36,6 +40,10 @@ Route::middleware('auth')->group(function () {
     // Invoice routes
     Route::resource('invoices', InvoiceController::class);
     Route::get('invoices/{id}/pdf', [InvoiceController::class, 'generatePdf'])->name('invoices.pdf');
+    Route::get('invoices/{id}/preview', [InvoiceController::class, 'preview'])->name('invoices.preview');
+    Route::post('invoices/{id}/validate', [InvoiceController::class, 'validateInvoice'])->name('invoices.validate');
+    Route::patch('invoices/{id}/status', [InvoiceController::class, 'updateStatus'])->name('invoices.update-status');
+    Route::get('quotes/create', [InvoiceController::class, 'createQuote'])->name('quotes.create');
 
     // Invoice Line routes
     Route::resource('invoice-lines', InvoiceLineController::class);

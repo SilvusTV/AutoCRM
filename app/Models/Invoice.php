@@ -18,15 +18,25 @@ class Invoice extends Model
      */
     protected $fillable = [
         'client_id',
+        'company_id',
         'project_id',
         'invoice_number',
+        'type',
         'status',
+        'is_validated',
         'total_ht',
         'tva_rate',
         'total_ttc',
         'issue_date',
         'due_date',
         'payment_date',
+        'payment_terms',
+        'payment_method',
+        'late_fees',
+        'bank_account',
+        'intro_text',
+        'conclusion_text',
+        'footer_text',
         'notes',
     ];
 
@@ -39,6 +49,7 @@ class Invoice extends Model
         'issue_date' => 'date',
         'due_date' => 'date',
         'payment_date' => 'date',
+        'is_validated' => 'boolean',
         'total_ht' => 'decimal:2',
         'tva_rate' => 'decimal:2',
         'total_ttc' => 'decimal:2',
@@ -61,6 +72,14 @@ class Invoice extends Model
     }
 
     /**
+     * Get the company that owns the invoice.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
      * Get the invoice lines for the invoice.
      */
     public function invoiceLines(): HasMany
@@ -74,5 +93,124 @@ class Invoice extends Model
     public function calculateTotalTTC(): float
     {
         return $this->total_ht * (1 + ($this->tva_rate / 100));
+    }
+
+    /**
+     * Generate a new invoice number with the format FA{YEAR}_XXX.
+     */
+    public static function generateInvoiceNumber(): string
+    {
+        $year = date('Y');
+        $prefix = "FA{$year}_";
+
+        // Find the highest invoice number for the current year
+        $highestNumber = self::where('invoice_number', 'like', $prefix.'%')
+            ->whereType('invoice')
+            ->orderBy('invoice_number', 'desc')
+            ->value('invoice_number');
+
+        if ($highestNumber) {
+            // Extract the numeric part and increment
+            $number = (int) substr($highestNumber, -3);
+            $number++;
+        } else {
+            $number = 1;
+        }
+
+        // Format with leading zeros
+        return $prefix.str_pad($number, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Generate a new quote number with the format FA{YEAR}_XXX.
+     */
+    public static function generateQuoteNumber(): string
+    {
+        $year = date('Y');
+        $prefix = "DE{$year}_";
+
+        // Find the highest invoice number for the current year
+        $highestNumber = self::where('invoice_number', 'like', $prefix.'%')
+            ->whereType('quote')
+            ->orderBy('invoice_number', 'desc')
+            ->value('invoice_number');
+
+        if ($highestNumber) {
+            // Extract the numeric part and increment
+            $number = (int) substr($highestNumber, -3);
+            $number++;
+        } else {
+            $number = 1;
+        }
+
+        // Format with leading zeros
+        return $prefix.str_pad($number, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Check if this is a quote.
+     */
+    public function isQuote(): bool
+    {
+        return $this->type === 'quote';
+    }
+
+    /**
+     * Check if this is an invoice.
+     */
+    public function isInvoice(): bool
+    {
+        return $this->type === 'invoice';
+    }
+
+    /**
+     * Calculate the total from invoice lines.
+     */
+    public function calculateTotalFromLines(): float
+    {
+        return $this->invoiceLines->sum('total_ht');
+    }
+
+    /**
+     * Update the total based on invoice lines.
+     */
+    public function updateTotalFromLines(): void
+    {
+        $this->total_ht = $this->calculateTotalFromLines();
+        $this->total_ttc = $this->calculateTotalTTC();
+        $this->save();
+    }
+
+    /**
+     * Check if the invoice is validated.
+     */
+    public function isValidated(): bool
+    {
+        return $this->is_validated;
+    }
+
+    /**
+     * Validate the invoice.
+     */
+    public function validate(): void
+    {
+        $this->is_validated = true;
+        $this->save();
+    }
+
+    /**
+     * Get regular (non-expense) invoice lines.
+     */
+    public function regularLines()
+    {
+        return $this->invoiceLines()->where('is_expense', false);
+    }
+
+    /**
+     * Get expense invoice lines.
+     */
+    public function expenseLines()
+    {
+        return $this->invoiceLines()->where('is_expense', true);
     }
 }

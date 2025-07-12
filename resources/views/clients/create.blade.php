@@ -24,11 +24,18 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+
                         <!-- Company -->
                         <div>
-                            <x-input-label for="company" :value="__('Entreprise (optionnel)')" />
-                            <x-text-input id="company" class="block mt-1 w-full" type="text" name="company" :value="old('company')" />
-                            <x-input-error :messages="$errors->get('company')" class="mt-2" />
+                            <x-input-label for="company_id" :value="__('Entreprise associée (optionnel)')"/>
+                            <select id="company_id" name="company_id"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">Sélectionner une entreprise</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('company_id')" class="mt-2"/>
                         </div>
 
                         <!-- Email -->
@@ -52,11 +59,12 @@
                             <x-input-error :messages="$errors->get('address')" class="mt-2" />
                         </div>
 
-                        <!-- SIRET -->
+                        <!-- Country -->
                         <div>
-                            <x-input-label for="siret" :value="__('Numéro SIRET (optionnel)')" />
-                            <x-text-input id="siret" class="block mt-1 w-full" type="text" name="siret" :value="old('siret')" />
-                            <x-input-error :messages="$errors->get('siret')" class="mt-2" />
+                            <x-input-label for="country" :value="__('Pays (optionnel)')"/>
+                            <x-text-input id="country" class="block mt-1 w-full" type="text" name="country"
+                                          :value="old('country')"/>
+                            <x-input-error :messages="$errors->get('country')" class="mt-2"/>
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

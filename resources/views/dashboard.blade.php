@@ -45,7 +45,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Factures impayées</h3>
-                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Invoice::where('status', '!=', 'payee')->count() }}</p>
+                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Invoice::where('status', '!=', 'paid')->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -59,7 +59,7 @@
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                             <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenu ce mois</h4>
                             @php
-                                $revenueThisMonth = App\Models\Invoice::where('status', 'payee')
+                                $revenueThisMonth = App\Models\Invoice::where('status', 'paid')
                                     ->whereMonth('payment_date', now()->month)
                                     ->whereYear('payment_date', now()->year)
                                     ->sum('total_ht');
@@ -71,7 +71,7 @@
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                             <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenu cette année</h4>
                             @php
-                                $revenueThisYear = App\Models\Invoice::where('status', 'payee')
+                                $revenueThisYear = App\Models\Invoice::where('status', 'paid')
                                     ->whereYear('payment_date', now()->year)
                                     ->sum('total_ht');
                             @endphp

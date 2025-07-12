@@ -17,9 +17,13 @@ class InvoiceLine extends Model
      */
     protected $fillable = [
         'invoice_id',
+        'item_type',
+        'is_expense',
         'description',
         'quantity',
         'unit_price',
+        'discount_percent',
+        'tva_rate',
         'total_ht',
     ];
 
@@ -29,8 +33,11 @@ class InvoiceLine extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'is_expense' => 'boolean',
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
+        'discount_percent' => 'decimal:2',
+        'tva_rate' => 'decimal:2',
         'total_ht' => 'decimal:2',
     ];
 
@@ -47,6 +54,26 @@ class InvoiceLine extends Model
      */
     public function calculateTotalHT(): float
     {
-        return $this->quantity * $this->unit_price;
+        $subtotal = $this->quantity * $this->unit_price;
+
+        // Apply discount if any
+        if ($this->discount_percent > 0) {
+            $subtotal = $subtotal * (1 - ($this->discount_percent / 100));
+        }
+
+        return $subtotal;
+    }
+
+    /**
+     * Calculate the total amount including tax.
+     */
+    public function calculateTotalTTC(): float
+    {
+        $totalHT = $this->calculateTotalHT();
+
+        // Use line-specific TVA rate if set, otherwise use invoice TVA rate
+        $tvaRate = $this->tva_rate ?? $this->invoice->tva_rate;
+
+        return $totalHT * (1 + ($tvaRate / 100));
     }
 }

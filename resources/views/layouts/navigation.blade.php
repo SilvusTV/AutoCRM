@@ -18,8 +18,14 @@
                     <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
                         {{ __('Clients') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
+                        {{ __('Entreprises') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                         {{ __('Projets') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">
+                        {{ __('Facturation') }}
                     </x-nav-link>
                     <x-nav-link :href="route('time-entries.index')" :active="request()->routeIs('time-entries.*')">
                         {{ __('Suivi du temps') }}
@@ -85,8 +91,14 @@
             <x-responsive-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
                 {{ __('Clients') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
+                {{ __('Entreprises') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                 {{ __('Projets') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('invoices.index')" :active="request()->routeIs('invoices.*')">
+                {{ __('Facturation') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('time-entries.index')" :active="request()->routeIs('time-entries.*')">
                 {{ __('Suivi du temps') }}
