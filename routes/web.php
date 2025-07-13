@@ -1,12 +1,15 @@
 <?php
 
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceLineController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TimeEntryController;
+use App\Http\Controllers\UrssafController;
 use App\Http\Controllers\UrssafDeclarationController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +53,21 @@ Route::middleware('auth')->group(function () {
 
     // URSSAF Declaration routes
     Route::resource('urssaf-declarations', UrssafDeclarationController::class);
+
+    // URSSAF Profile routes
+    Route::patch('/urssaf', [UrssafController::class, 'update'])->name('urssaf.update');
+
+    // Bank Account routes
+    Route::post('bank-accounts', [BankAccountController::class, 'store'])->name('bank-accounts.store');
+    Route::get('bank-accounts/{bankAccount}/edit', [BankAccountController::class, 'edit'])->name('bank-accounts.edit');
+    Route::patch('bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])->name('bank-accounts.update');
+    Route::patch('bank-accounts/{bankAccount}/set-default', [BankAccountController::class, 'setDefault'])->name('bank-accounts.set-default');
+    Route::delete('bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])->name('bank-accounts.destroy');
+
+    // Payment Method routes
+    Route::get('payment-methods/create', [PaymentMethodController::class, 'create'])->name('payment-methods.create');
+    Route::post('payment-methods', [PaymentMethodController::class, 'store'])->name('payment-methods.store');
+    Route::delete('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
 });
 
 require __DIR__.'/auth.php';

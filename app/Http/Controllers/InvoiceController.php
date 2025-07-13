@@ -33,6 +33,7 @@ class InvoiceController extends Controller
         $projects = Project::where('status', '!=', 'archive')
             ->orderBy('name')
             ->get();
+        $bankAccounts = auth()->user()->bankAccounts;
 
         // Create a combined list of recipients (clients and companies)
         $recipients = [];
@@ -80,7 +81,7 @@ class InvoiceController extends Controller
         $invoiceNumber = Invoice::generateInvoiceNumber();
         $quoteNumber = Invoice::generateQuoteNumber();
 
-        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber', 'quoteNumber'));
+        return view('invoices.create', compact('clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber', 'quoteNumber', 'bankAccounts'));
     }
 
     /**
@@ -111,7 +112,7 @@ class InvoiceController extends Controller
             'payment_terms' => 'required|in:immediate,15_days,30_days,45_days,60_days,end_of_month',
             'payment_method' => 'required|in:bank_transfer,check,cash,credit_card,paypal',
             'late_fees' => 'required|in:none,legal_rate,fixed_percent',
-            'bank_account' => 'nullable|string|max:255',
+            'bank_account' => 'nullable',
             'intro_text' => 'nullable|string',
             'conclusion_text' => 'nullable|string',
             'footer_text' => 'nullable|string',
@@ -246,6 +247,7 @@ class InvoiceController extends Controller
         $projects = Project::where('status', '!=', 'archive')
             ->orderBy('name')
             ->get();
+        $bankAccounts = auth()->user()->bankAccounts;
 
         // Create a combined list of recipients (clients and companies)
         $recipients = [];
@@ -289,7 +291,7 @@ class InvoiceController extends Controller
         $invoiceNumber = $invoice->invoice_number;
 
         // Use the create view but with the invoice data
-        return view('invoices.create', compact('invoice', 'clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber'));
+        return view('invoices.create', compact('invoice', 'clients', 'companies', 'projects', 'recipients', 'selectedRecipientId', 'selectedProjectId', 'invoiceType', 'invoiceNumber', 'bankAccounts'));
     }
 
     /**
@@ -319,7 +321,7 @@ class InvoiceController extends Controller
             'payment_terms' => 'required|in:immediate,15_days,30_days,45_days,60_days,end_of_month',
             'payment_method' => 'required|in:bank_transfer,check,cash,credit_card,paypal',
             'late_fees' => 'required|in:none,legal_rate,fixed_percent',
-            'bank_account' => 'nullable|string|max:255',
+            'bank_account' => 'nullable',
             'intro_text' => 'nullable|string',
             'conclusion_text' => 'nullable|string',
             'footer_text' => 'nullable|string',

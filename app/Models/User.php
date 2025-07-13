@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -22,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'declaration_frequency',
+        'tax_level',
     ];
 
     /**
@@ -44,6 +48,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'declaration_frequency' => 'string',
+            'tax_level' => 'decimal:2',
         ];
     }
 
@@ -61,5 +67,29 @@ class User extends Authenticatable
     public function urssafDeclarations(): HasMany
     {
         return $this->hasMany(URSSAFDeclaration::class);
+    }
+
+    /**
+     * Get the bank accounts for the user.
+     */
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(BankAccount::class);
+    }
+
+    /**
+     * Get the payment methods for the user.
+     */
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    /**
+     * Get the company associated with the user.
+     */
+    public function company(): HasOne
+    {
+        return $this->hasOne(Company::class);
     }
 }
