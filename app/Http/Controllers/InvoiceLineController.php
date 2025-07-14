@@ -29,8 +29,9 @@ class InvoiceLineController extends Controller
                 ->with('error', 'ID de facture manquant.');
         }
 
-        // Get the invoice
+        // Get the invoice and ensure it belongs to the authenticated user
         $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->where('user_id', auth()->id())
             ->findOrFail($invoiceId);
 
         // Check if the invoice is validated
@@ -58,8 +59,10 @@ class InvoiceLineController extends Controller
             'tva_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        // Get the invoice
-        $invoice = Invoice::findOrFail($validated['invoice_id']);
+        // Get the invoice and ensure it belongs to the authenticated user
+        $invoice = Invoice::where('id', $validated['invoice_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
         // Check if the invoice is validated
         if ($invoice->isValidated()) {
@@ -86,10 +89,10 @@ class InvoiceLineController extends Controller
         $invoiceLine->discount_percent = $validated['discount_percent'] ?? 0;
         $invoiceLine->tva_rate = $validated['tva_rate'] ?? null;
         $invoiceLine->total_ht = $totalHT;
+        $invoiceLine->user_id = auth()->id(); // Associate with authenticated user
         $invoiceLine->save();
 
-        // Update the invoice total
-        $invoice = Invoice::findOrFail($validated['invoice_id']);
+        // Update the invoice total (we already have the invoice from earlier)
         $newTotalHT = $invoice->invoiceLines->sum('total_ht');
         $invoice->total_ht = $newTotalHT;
         $invoice->total_ttc = $newTotalHT * (1 + ($invoice->tva_rate / 100));
@@ -120,7 +123,10 @@ class InvoiceLineController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $invoiceLine = InvoiceLine::findOrFail($id);
+        // Find the invoice line and ensure it belongs to the authenticated user
+        $invoiceLine = InvoiceLine::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
         $invoice = $invoiceLine->invoice;
 
         // Check if the invoice is validated
@@ -158,8 +164,7 @@ class InvoiceLineController extends Controller
         $invoiceLine->total_ht = $totalHT;
         $invoiceLine->save();
 
-        // Update the invoice total
-        $invoice = $invoiceLine->invoice;
+        // Update the invoice total (we already have the invoice from earlier)
         $newTotalHT = $invoice->invoiceLines->sum('total_ht');
         $invoice->total_ht = $newTotalHT;
         $invoice->total_ttc = $newTotalHT * (1 + ($invoice->tva_rate / 100));
@@ -174,7 +179,10 @@ class InvoiceLineController extends Controller
      */
     public function destroy(string $id)
     {
-        $invoiceLine = InvoiceLine::findOrFail($id);
+        // Find the invoice line and ensure it belongs to the authenticated user
+        $invoiceLine = InvoiceLine::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
         $invoice = $invoiceLine->invoice;
 
         // Check if the invoice is validated
@@ -186,7 +194,7 @@ class InvoiceLineController extends Controller
         // Delete the invoice line
         $invoiceLine->delete();
 
-        // Update the invoice total
+        // Update the invoice total (we already have the invoice from earlier)
         $newTotalHT = $invoice->invoiceLines->sum('total_ht');
         $invoice->total_ht = $newTotalHT;
         $invoice->total_ttc = $newTotalHT * (1 + ($invoice->tva_rate / 100));

@@ -13,7 +13,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Projets actifs</h3>
-                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Project::where('status', 'en_cours')->count() }}</p>
+                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Project::where('status', 'en_cours')->where('user_id', auth()->id())->count() }}</p>
                     </div>
                 </div>
 
@@ -21,7 +21,12 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Clients</h3>
-                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Client::count() }}</p>
+                        @php
+                            $clientCount = App\Models\Client::where('user_id', auth()->id())->count();
+                            $companyClientCount = App\Models\Company::where('user_id', auth()->id())->where('is_own_company', false)->count();
+                            $totalClientCount = $clientCount + $companyClientCount;
+                        @endphp
+                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ $totalClientCount }}</p>
                     </div>
                 </div>
 
@@ -45,7 +50,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Factures impayées</h3>
-                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Invoice::where('status', '!=', 'paid')->count() }}</p>
+                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{{ App\Models\Invoice::where('status', '!=', 'paid')->where('user_id', auth()->id())->count() }}</p>
                     </div>
                 </div>
             </div>
@@ -60,6 +65,7 @@
                             <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenu ce mois</h4>
                             @php
                                 $revenueThisMonth = App\Models\Invoice::where('status', 'paid')
+                                    ->where('user_id', auth()->id())
                                     ->whereMonth('payment_date', now()->month)
                                     ->whereYear('payment_date', now()->year)
                                     ->sum('total_ht');
@@ -72,6 +78,7 @@
                             <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Revenu cette année</h4>
                             @php
                                 $revenueThisYear = App\Models\Invoice::where('status', 'paid')
+                                    ->where('user_id', auth()->id())
                                     ->whereYear('payment_date', now()->year)
                                     ->sum('total_ht');
                             @endphp

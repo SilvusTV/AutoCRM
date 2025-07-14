@@ -28,6 +28,7 @@ class Company extends Model
         'country',
         'logo_path',
         'regime',
+        'is_own_company',
     ];
 
     /**
@@ -37,6 +38,7 @@ class Company extends Model
      */
     protected $casts = [
         'regime' => 'string',
+        'is_own_company' => 'boolean',
     ];
 
     /**

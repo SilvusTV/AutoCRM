@@ -37,6 +37,7 @@ class UrssafDeclarationController extends Controller
         $monthlyRevenue = Invoice::whereMonth('issue_date', $currentMonth)
             ->whereYear('issue_date', $currentYear)
             ->where('status', 'paid')
+            ->where('user_id', auth()->id())
             ->sum('total_ht');
 
         return view('urssaf-declarations.create', compact('currentMonth', 'currentYear', 'defaultChargeRate', 'monthlyRevenue'));
@@ -92,12 +93,7 @@ class UrssafDeclarationController extends Controller
      */
     public function show(string $id)
     {
-        $declaration = URSSAFDeclaration::findOrFail($id);
-
-        // Ensure the user can only view their own declarations
-        if ($declaration->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $declaration = URSSAFDeclaration::where('user_id', auth()->id())->findOrFail($id);
 
         return view('urssaf-declarations.show', compact('declaration'));
     }
@@ -107,12 +103,7 @@ class UrssafDeclarationController extends Controller
      */
     public function edit(string $id)
     {
-        $declaration = URSSAFDeclaration::findOrFail($id);
-
-        // Ensure the user can only edit their own declarations
-        if ($declaration->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $declaration = URSSAFDeclaration::where('user_id', auth()->id())->findOrFail($id);
 
         return view('urssaf-declarations.edit', compact('declaration'));
     }
@@ -122,12 +113,7 @@ class UrssafDeclarationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $declaration = URSSAFDeclaration::findOrFail($id);
-
-        // Ensure the user can only update their own declarations
-        if ($declaration->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $declaration = URSSAFDeclaration::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'year' => 'required|integer|min:2000|max:'.(now()->year + 1),
@@ -173,12 +159,7 @@ class UrssafDeclarationController extends Controller
      */
     public function destroy(string $id)
     {
-        $declaration = URSSAFDeclaration::findOrFail($id);
-
-        // Ensure the user can only delete their own declarations
-        if ($declaration->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $declaration = URSSAFDeclaration::where('user_id', auth()->id())->findOrFail($id);
 
         $declaration->delete();
 

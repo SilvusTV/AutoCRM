@@ -16,7 +16,7 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        $companies = Company::orderBy('name')->paginate(10);
+        $companies = Company::where('user_id', auth()->id())->where('is_own_company', 0)->orderBy('name')->paginate(10);
 
         return view('companies.index', compact('companies'));
     }
@@ -66,6 +66,13 @@ class CompanyController extends Controller
             $validated['user_id'] = $request->user()->id;
         }
 
+        // Determine if this is the user's own company based on the referer
+        if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
+            $validated['is_own_company'] = true;
+        } else {
+            $validated['is_own_company'] = false;
+        }
+
         $company = Company::create($validated);
 
         // Determine the redirect based on the referer
@@ -91,7 +98,7 @@ class CompanyController extends Controller
      */
     public function show(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
         $clients = $company->clients()->orderBy('name')->get();
         $invoices = $company->invoices()->orderBy('created_at', 'desc')->get();
 
@@ -103,7 +110,7 @@ class CompanyController extends Controller
      */
     public function edit(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
 
         return view('companies.edit', compact('company'));
     }
@@ -113,7 +120,7 @@ class CompanyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -171,7 +178,7 @@ class CompanyController extends Controller
      */
     public function destroy(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
         $company->delete();
 
         return redirect()->route('companies.index')

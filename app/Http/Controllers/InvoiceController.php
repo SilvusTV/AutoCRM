@@ -17,6 +17,7 @@ class InvoiceController extends Controller
     public function index()
     {
         $invoices = Invoice::with(['client', 'company', 'project'])
+            ->where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -28,9 +29,10 @@ class InvoiceController extends Controller
      */
     public function create(Request $request)
     {
-        $clients = Client::orderBy('name')->get();
-        $companies = Company::orderBy('name')->get();
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
+        $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
         $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
         $bankAccounts = auth()->user()->bankAccounts;
@@ -135,20 +137,20 @@ class InvoiceController extends Controller
         $client = null;
 
         if ($recipientType === 'client') {
-            // Verify client exists
-            $clientFind = Client::find($recipientId);
+            // Verify client exists and belongs to the authenticated user
+            $clientFind = Client::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $clientFind) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Client non trouvé.'])
+                    ->withErrors(['recipient_id' => 'Client non trouvé ou non autorisé.'])
                     ->withInput();
             }
             $client = $clientFind;
         } elseif ($recipientType === 'company') {
-            // Verify company exists
-            $companyFind = Company::find($recipientId);
+            // Verify company exists and belongs to the authenticated user
+            $companyFind = Company::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $companyFind) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Entreprise non trouvée.'])
+                    ->withErrors(['recipient_id' => 'Entreprise non trouvée ou non autorisée.'])
                     ->withInput();
             }
             $client = $companyFind;
@@ -160,13 +162,22 @@ class InvoiceController extends Controller
 
         // If this is a quote and no project is selected, create a new project
         $project_id = $validated['project_id'];
-        if ($validated['type'] === 'quote' && ! $project_id && isset($validated['project_name'])) {
+        if ($project_id) {
+            // Verify project exists and belongs to the authenticated user
+            $project = Project::where('id', $project_id)->where('user_id', auth()->id())->first();
+            if (! $project) {
+                return redirect()->back()
+                    ->withErrors(['project_id' => 'Projet non trouvé ou non autorisé.'])
+                    ->withInput();
+            }
+        } elseif ($validated['type'] === 'quote' && isset($validated['project_name'])) {
             // Create a new project
             $project = new Project;
             $project->name = $validated['project_name'];
             $project->client_id = $client->id;
             $project->client_type = $recipientType;
             $project->status = 'en_cours'; // Set status to in progress
+            $project->user_id = auth()->id(); // Associate with authenticated user
             $project->save();
 
             $project_id = $project->id;
@@ -210,6 +221,7 @@ class InvoiceController extends Controller
         $invoice->footer_text = $validated['footer_text'] ?? null;
 
         $invoice->notes = $validated['notes'] ?? null;
+        $invoice->user_id = auth()->id(); // Associate with authenticated user
         $invoice->save();
 
         $successMessage = $validated['type'] === 'invoice' ? 'Facture créée avec succès. Vous pouvez maintenant ajouter des lignes.' : 'Devis créé avec succès. Vous pouvez maintenant ajouter des lignes.';
@@ -234,6 +246,7 @@ class InvoiceController extends Controller
     public function edit(string $id)
     {
         $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->where('user_id', auth()->id())
             ->findOrFail($id);
 
         // Prevent editing of validated invoices
@@ -242,9 +255,10 @@ class InvoiceController extends Controller
                 ->with('error', 'Les factures validées ne peuvent pas être modifiées.');
         }
 
-        $clients = Client::orderBy('name')->get();
-        $companies = Company::orderBy('name')->get();
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
+        $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
         $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
         $bankAccounts = auth()->user()->bankAccounts;
@@ -299,7 +313,7 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::where('user_id', auth()->id())->findOrFail($id);
 
         // Prevent updating of validated invoices
         if ($invoice->isValidated()) {
@@ -343,26 +357,34 @@ class InvoiceController extends Controller
         $company_id = null;
 
         if ($recipientType === 'client') {
-            // Verify client exists
-            $client = Client::find($recipientId);
+            // Verify client exists and belongs to the authenticated user
+            $client = Client::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $client) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Client non trouvé.'])
+                    ->withErrors(['recipient_id' => 'Client non trouvé ou non autorisé.'])
                     ->withInput();
             }
             $client_id = $recipientId;
         } elseif ($recipientType === 'company') {
-            // Verify company exists
-            $company = Company::find($recipientId);
+            // Verify company exists and belongs to the authenticated user
+            $company = Company::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $company) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Entreprise non trouvée.'])
+                    ->withErrors(['recipient_id' => 'Entreprise non trouvée ou non autorisée.'])
                     ->withInput();
             }
             $company_id = $recipientId;
         } else {
             return redirect()->back()
                 ->withErrors(['recipient_id' => 'Type de destinataire invalide.'])
+                ->withInput();
+        }
+
+        // Verify project exists and belongs to the authenticated user
+        $project = Project::where('id', $validated['project_id'])->where('user_id', auth()->id())->first();
+        if (! $project) {
+            return redirect()->back()
+                ->withErrors(['project_id' => 'Projet non trouvé ou non autorisé.'])
                 ->withInput();
         }
 
@@ -404,7 +426,7 @@ class InvoiceController extends Controller
      */
     public function destroy(string $id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::where('user_id', auth()->id())->findOrFail($id);
 
         // Prevent deletion of validated invoices
         if ($invoice->isValidated()) {
@@ -424,6 +446,7 @@ class InvoiceController extends Controller
     public function generatePdf(string $id)
     {
         $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->where('user_id', auth()->id())
             ->findOrFail($id);
 
         $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
@@ -439,6 +462,7 @@ class InvoiceController extends Controller
     public function preview(string $id)
     {
         $invoice = Invoice::with(['client', 'company', 'project', 'invoiceLines'])
+            ->where('user_id', auth()->id())
             ->findOrFail($id);
 
         return view('invoices.preview', compact('invoice'));
@@ -449,7 +473,7 @@ class InvoiceController extends Controller
      */
     public function validateInvoice(string $id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::where('user_id', auth()->id())->findOrFail($id);
 
         // Check if the invoice already has lines
         if ($invoice->invoiceLines->count() === 0) {
@@ -472,7 +496,7 @@ class InvoiceController extends Controller
      */
     public function updateStatus(Request $request, string $id)
     {
-        $invoice = Invoice::findOrFail($id);
+        $invoice = Invoice::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'status' => 'required|in:draft,sent,paid,cancelled,overdue',

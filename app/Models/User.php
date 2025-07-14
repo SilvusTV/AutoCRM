@@ -86,10 +86,50 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the company associated with the user.
+     * Get the user's own company.
      */
     public function company(): HasOne
     {
-        return $this->hasOne(Company::class);
+        return $this->hasOne(Company::class)->where('is_own_company', true);
+    }
+
+    /**
+     * Get the client companies associated with the user.
+     */
+    public function clientCompanies(): HasMany
+    {
+        return $this->hasMany(Company::class)->where('is_own_company', false);
+    }
+
+    /**
+     * Get the clients for the user.
+     */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class);
+    }
+
+    /**
+     * Get the projects for the user.
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    /**
+     * Get the invoices for the user.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Get the invoice lines for the user.
+     */
+    public function invoiceLines(): HasMany
+    {
+        return $this->hasMany(InvoiceLine::class);
     }
 }

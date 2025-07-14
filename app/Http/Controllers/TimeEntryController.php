@@ -50,10 +50,11 @@ class TimeEntryController extends Controller
 
         // Get projects and clients for filter dropdowns
         $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
 
-        $clients = Client::orderBy('name')->get();
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('time-entries.index', compact('timeEntries', 'projects', 'clients'));
     }
@@ -64,6 +65,7 @@ class TimeEntryController extends Controller
     public function create(Request $request)
     {
         $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
 
@@ -87,6 +89,11 @@ class TimeEntryController extends Controller
             'end_time' => 'required_if:entry_type,time_range|nullable|date_format:H:i|after:start_time',
             'description' => 'nullable|string',
         ]);
+
+        // Verify that the project belongs to the authenticated user
+        $project = Project::where('id', $validated['project_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
         $timeEntry = new TimeEntry;
         $timeEntry->project_id = $validated['project_id'];
@@ -118,12 +125,8 @@ class TimeEntryController extends Controller
     public function show(string $id)
     {
         $timeEntry = TimeEntry::with(['project', 'project.client', 'user'])
+            ->where('user_id', auth()->id())
             ->findOrFail($id);
-
-        // Ensure the user can only view their own time entries
-        if ($timeEntry->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
 
         return view('time-entries.show', compact('timeEntry'));
     }
@@ -133,12 +136,7 @@ class TimeEntryController extends Controller
      */
     public function edit(string $id)
     {
-        $timeEntry = TimeEntry::findOrFail($id);
-
-        // Ensure the user can only edit their own time entries
-        if ($timeEntry->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $timeEntry = TimeEntry::where('user_id', auth()->id())->findOrFail($id);
 
         $projects = Project::where('status', '!=', 'archive')
             ->orderBy('name')
@@ -152,12 +150,7 @@ class TimeEntryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $timeEntry = TimeEntry::findOrFail($id);
-
-        // Ensure the user can only update their own time entries
-        if ($timeEntry->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $timeEntry = TimeEntry::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
@@ -169,6 +162,11 @@ class TimeEntryController extends Controller
             'end_time' => 'required_if:entry_type,time_range|nullable|date_format:H:i|after:start_time',
             'description' => 'nullable|string',
         ]);
+
+        // Verify that the project belongs to the authenticated user
+        $project = Project::where('id', $validated['project_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
         $timeEntry->project_id = $validated['project_id'];
         $timeEntry->date = $validated['date'];
@@ -199,12 +197,7 @@ class TimeEntryController extends Controller
      */
     public function destroy(string $id)
     {
-        $timeEntry = TimeEntry::findOrFail($id);
-
-        // Ensure the user can only delete their own time entries
-        if ($timeEntry->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $timeEntry = TimeEntry::where('user_id', auth()->id())->findOrFail($id);
 
         $timeEntry->delete();
 
@@ -259,10 +252,11 @@ class TimeEntryController extends Controller
 
         // Get projects and clients for filter dropdowns
         $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
             ->orderBy('name')
             ->get();
 
-        $clients = Client::orderBy('name')->get();
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
 
         // Generate calendar data
         $calendar = [];
