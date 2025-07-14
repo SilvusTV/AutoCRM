@@ -105,7 +105,7 @@
             @if(isset($company) && $company->logo_path)
                 <div class="mt-2">
                     <p class="text-sm text-gray-600 dark:text-gray-400">Logo actuel:</p>
-                    <img src="{{ Storage::url($company->logo_path) }}" alt="Logo de l'entreprise"
+                    <img src="{{Storage::url($company->logo_path) }}" alt="Logo de l'entreprise"
                          class="mt-1 h-20 w-auto">
                 </div>
             @endif

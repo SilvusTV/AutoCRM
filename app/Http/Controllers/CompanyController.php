@@ -35,30 +35,14 @@ class CompanyController extends Controller
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'user_id' => 'nullable|exists:users,id',
             'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
         ]);
 
         // Handle logo upload if provided
         if ($request->hasFile('logo')) {
-            $logo = $request->file('logo');
-            $uuid = Str::uuid()->toString();
-            $extension = 'webp';
-            $filename = $uuid.'.'.$extension;
-
-            // Create image manager with GD driver
-            $manager = new ImageManager(new Driver);
-
-            // Convert image to WebP format
-            $img = $manager->read($logo);
-            $encoded = $img->toWebp(90); // 90% quality
-
-            // Store in S3
-            $path = 'company_logo/'.$filename;
-            Storage::disk('s3')->put($path, $encoded->toString());
-
-            $validated['logo_path'] = $path;
+            $validated['logo_path'] = encodeAndUploadImg(logo: $request->file('logo'));
         }
 
         // If creating from profile, associate with current user
@@ -131,34 +115,13 @@ class CompanyController extends Controller
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
         ]);
 
         // Handle logo upload if provided
         if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($company->logo_path) {
-                Storage::disk('s3')->delete($company->logo_path);
-            }
-
-            $logo = $request->file('logo');
-            $uuid = Str::uuid()->toString();
-            $extension = 'jpg';
-            $filename = $uuid.'.'.$extension;
-
-            // Create image manager with GD driver
-            $manager = new ImageManager(new Driver);
-
-            // Convert image to JPEG format
-            $img = $manager->read($logo);
-            $encoded = $img->toJpg(90); // 90% quality
-
-            // Store in S3
-            $path = 'company_logo/'.$filename;
-            Storage::disk('s3')->put($path, $encoded->toString());
-
-            $validated['logo_path'] = $path;
+            $validated['logo_path'] = encodeAndUploadImg($company, $request->file('logo'));
         }
 
         $company->update($validated);
@@ -184,4 +147,28 @@ class CompanyController extends Controller
         return redirect()->route('companies.index')
             ->with('success', 'Entreprise supprimée avec succès.');
     }
+}
+
+function encodeAndUploadImg($company, $logo)
+{
+    if ($company && $company->logo_path) {
+        Storage::disk('s3')->delete($company->logo_path);
+    }
+
+    $uuid = Str::uuid()->toString();
+    $extension = 'webp';
+    $filename = $uuid.'.'.$extension;
+
+    // Create image manager with GD driver
+    $manager = new ImageManager(new Driver);
+
+    // Convert image to WebP format
+    $img = $manager->read($logo);
+    $encoded = (string) $img->toWebp(90); // 90% quality
+
+    // Store in S3
+    $path = 'company_logo/'.$filename;
+    Storage::disk('s3')->put($path, $encoded, 'public');
+
+    return $path;
 }
