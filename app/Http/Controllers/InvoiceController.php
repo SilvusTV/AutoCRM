@@ -7,7 +7,9 @@ use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -451,9 +453,51 @@ class InvoiceController extends Controller
 
         // Get the user's own company information
         $ownCompany = auth()->user()->company;
-        $logoPath = $ownCompany->logo_path ? env('AWS_URL').$ownCompany->logo_path : null;
 
+        // Handle logo path
+        $logoPath = null;
+        if ($ownCompany->logo_path) {
+            try {
+                // First approach: Try to get the image content and create a data URI
+                $imageContent = Storage::disk('s3')->get($ownCompany->logo_path);
+                if ($imageContent) {
+                    // Determine the MIME type based on file extension
+                    $extension = pathinfo($ownCompany->logo_path, PATHINFO_EXTENSION);
+                    $mimeType = 'image/jpeg'; // Default
+
+                    if ($extension === 'png') {
+                        $mimeType = 'image/png';
+                    } elseif ($extension === 'gif') {
+                        $mimeType = 'image/gif';
+                    } elseif ($extension === 'svg') {
+                        $mimeType = 'image/svg+xml';
+                    } elseif ($extension === 'webp') {
+                        $mimeType = 'image/webp';
+                    }
+
+                    // Create a data URI
+                    $logoPath = 'data:'.$mimeType.';base64,'.base64_encode($imageContent);
+                }
+            } catch (Exception $e) {
+                // If the first approach fails, try the second approach
+                try {
+                    // Second approach: Try to generate a temporary URL
+                    $logoPath = Storage::disk('s3')->temporaryUrl(
+                        $ownCompany->logo_path,
+                        now()->addMinutes(5)
+                    );
+                } catch (Exception $e) {
+                    // If both approaches fail, fall back to the regular URL
+                    $logoPath = env('AWS_URL').$ownCompany->logo_path;
+                }
+            }
+        }
+
+        // Set DomPDF options to improve image handling
         $pdf = PDF::loadView('invoices.pdf', compact('invoice', 'ownCompany', 'logoPath'));
+        $pdf->getDomPDF()->getOptions()->set('isRemoteEnabled', true);
+        $pdf->getDomPDF()->getOptions()->set('isHtml5ParserEnabled', true);
+        $pdf->getDomPDF()->getOptions()->set('isFontSubsettingEnabled', true);
 
         $prefix = $invoice->isQuote() ? 'devis_' : 'facture_';
 

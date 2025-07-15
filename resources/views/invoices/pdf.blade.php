@@ -158,11 +158,11 @@
 <header>
     <table class="two-columns">
         <tr>
-            <td>
+            <td class="left">
                 <h2>Facture {{ $invoice->invoice_number }}</h2>
                 <p>Date : {{ $invoice->issue_date->format('d/m/Y') }}</p>
             </td>
-            <td>
+            <td class="right">
                 @if($ownCompany->logo_path)
                     <img class="logo" src="{{ $logoPath }}" alt="Logo de l'entreprise">
                 @endif
