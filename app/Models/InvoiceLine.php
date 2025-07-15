@@ -25,6 +25,7 @@ class InvoiceLine extends Model
         'discount_percent',
         'tva_rate',
         'total_ht',
+        'user_id',
     ];
 
     /**
@@ -47,6 +48,14 @@ class InvoiceLine extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * Get the user that owns the invoice line.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

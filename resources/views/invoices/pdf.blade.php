@@ -3,6 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Facture {{ $invoice->invoice_number }}</title>
+    @php
+        use App\Models\BankAccount;use Illuminate\Support\Facades\Storage;
+    @endphp
     <style>
         .preview-container {
             position: absolute;
@@ -42,6 +45,11 @@
         header h2 {
             margin: 0;
             line-height: 20px;
+        }
+
+        header .logo {
+            height: 50px;
+            width: auto;
         }
 
         .two-columns {
@@ -148,10 +156,19 @@
 </head>
 <body>
 <header>
-    <div>
-        <h2>Facture {{ $invoice->invoice_number }}</h2>
-        <p>Date : {{ $invoice->issue_date->format('d/m/Y') }}</p>
-    </div>
+    <table class="two-columns">
+        <tr>
+            <td class="left">
+                <h2>Facture {{ $invoice->invoice_number }}</h2>
+                <p>Date : {{ $invoice->issue_date->format('d/m/Y') }}</p>
+            </td>
+            <td class="right">
+                @if($ownCompany->logo_path)
+                    <img class="logo" src="{{ $logoPath }}" alt="Logo de l'entreprise">
+                @endif
+            </td>
+        </tr>
+    </table>
 </header>
 @if(!$invoice->is_validated)
     <div class="preview-container">
@@ -169,35 +186,35 @@
             <table class="sub-two-columns">
                 <tr>
                     <td class="line-label"><strong>Société :</strong></td>
-                    <td class="line-value"><strong>Nom de l'entreprise</strong></td>
+                    <td class="line-value"><strong>{{ $ownCompany->name }}</strong></td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Votre contact :</strong></td>
-                    <td class="line-value">Nom du représentant</td>
+                    <td class="line-value">{{ auth()->user()->name }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Adresse :</strong></td>
-                    <td class="line-value">Adresse de l'entreprise</td>
+                    <td class="line-value">{{ $ownCompany->address }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Pays :</strong></td>
-                    <td class="line-value">France</td>
+                    <td class="line-value">{{ $ownCompany->country ?? 'France' }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Numéro d’entreprise :</strong></td>
-                    <td class="line-value">901 506 949 00014</td>
+                    <td class="line-value">{{ $ownCompany->siret }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Code d’activité :</strong></td>
-                    <td class="line-value">6202B</td>
+                    <td class="line-value">{{ $ownCompany->naf_code }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Numéro de téléphone :</strong></td>
-                    <td class="line-value">0647508341</td>
+                    <td class="line-value">{{ $ownCompany->phone }}</td>
                 </tr>
                 <tr>
                     <td class="line-label"><strong>Adresse email :</strong></td>
-                    <td class="line-value">contact@entreprise.com<</td>
+                    <td class="line-value">{{ $ownCompany->email }}</td>
                 </tr>
             </table>
         </td>
@@ -353,7 +370,16 @@
             @if($invoice->payment_method == 'bank_transfer' && $invoice->bank_account)
                 <div class="payment-details">
                     <h3>Coordonnées bancaires</h3>
-                    <p>{{ $invoice->bank_account }}</p>
+                    @php
+                        $bankAccount = BankAccount::find($invoice->bank_account);
+                    @endphp
+                    @if($bankAccount)
+                        <p><strong>Titulaire:</strong> {{ $bankAccount->account_holder }}</p>
+                        <p><strong>BIC:</strong> {{ $bankAccount->bic }}</p>
+                        <p><strong>IBAN:</strong> {{ $bankAccount->iban }}</p>
+                    @else
+                        <p>{{ $invoice->bank_account }}</p>
+                    @endif
                 </div>
             @endif
         </td>

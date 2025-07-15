@@ -38,6 +38,7 @@ class Invoice extends Model
         'conclusion_text',
         'footer_text',
         'notes',
+        'user_id',
     ];
 
     /**
@@ -85,6 +86,14 @@ class Invoice extends Model
     public function invoiceLines(): HasMany
     {
         return $this->hasMany(InvoiceLine::class);
+    }
+
+    /**
+     * Get the user that owns the invoice.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**
