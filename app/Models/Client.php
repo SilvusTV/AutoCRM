@@ -23,6 +23,7 @@ class Client extends Model
         'address',
         'country',
         'company_id',
+        'user_id',
     ];
 
     /**
@@ -47,5 +48,13 @@ class Client extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Get the user that owns the client.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

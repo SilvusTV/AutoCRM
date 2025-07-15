@@ -13,7 +13,7 @@ class ClientController extends Controller
      */
     public function index()
     {
-        $clients = Client::orderBy('name')->paginate(10);
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->paginate(10);
 
         return view('clients.index', compact('clients'));
     }
@@ -42,6 +42,8 @@ class ClientController extends Controller
             'company_id' => 'nullable|exists:companies,id',
         ]);
 
+        $validated['user_id'] = auth()->id();
+
         $client = Client::create($validated);
 
         return redirect()->route('clients.index')
@@ -53,7 +55,7 @@ class ClientController extends Controller
      */
     public function show(string $id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
         $projects = $client->projects()->orderBy('created_at', 'desc')->get();
 
         // Calculate total time spent across all projects
@@ -74,8 +76,8 @@ class ClientController extends Controller
      */
     public function edit(string $id)
     {
-        $client = Client::findOrFail($id);
-        $companies = Company::orderBy('name')->get();
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
+        $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
 
         return view('clients.edit', compact('client', 'companies'));
     }
@@ -85,7 +87,7 @@ class ClientController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -95,6 +97,13 @@ class ClientController extends Controller
             'country' => 'nullable|string|max:255',
             'company_id' => 'nullable|exists:companies,id',
         ]);
+
+        // Ensure company belongs to the authenticated user
+        if (! empty($validated['company_id'])) {
+            $company = Company::where('id', $validated['company_id'])
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+        }
 
         $client->update($validated);
 
@@ -107,7 +116,7 @@ class ClientController extends Controller
      */
     public function destroy(string $id)
     {
-        $client = Client::findOrFail($id);
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
         $client->delete();
 
         return redirect()->route('clients.index')

@@ -35,6 +35,14 @@ permet de suivre les clients, les projets, le temps passé, les factures et les 
 - Calcul automatique des charges basé sur le revenu déclaré
 - Suivi des paiements des charges sociales
 
+### Profil amélioré
+
+- Interface avec navigation latérale
+- Section Profil pour les informations personnelles
+- Section URSSAF pour configurer le rythme de déclaration et le niveau d'imposition
+- Section Entreprise pour gérer les informations de l'entreprise et télécharger un logo
+- Section Moyens de paiement pour gérer les comptes bancaires et les méthodes de paiement (Stripe, PayPal)
+
 ### Tableau de bord
 - Vue d'ensemble de l'activité
 - Statistiques financières (revenus, charges)
@@ -160,6 +168,27 @@ php artisan serve
 ```
 
 9. Accédez à l'application à l'adresse http://localhost:8000
+
+## Configuration du stockage S3 pour les logos d'entreprise
+
+L'application utilise Scaleway S3 pour stocker les logos d'entreprise. Pour configurer le stockage S3, ajoutez les
+variables suivantes à votre fichier `.env` :
+
+```
+AWS_ACCESS_KEY_ID=votre_cle_acces_scaleway
+AWS_SECRET_ACCESS_KEY=votre_cle_secrete_scaleway
+AWS_DEFAULT_REGION=fr-par
+AWS_BUCKET=nom_de_votre_bucket
+AWS_ENDPOINT=https://s3.fr-par.scw.cloud
+AWS_URL=https://s3.fr-par.scw.cloud/nom_de_votre_bucket
+AWS_USE_PATH_STYLE_ENDPOINT=false
+```
+
+Les logos téléchargés sont automatiquement :
+
+- Renommés avec un UUID unique
+- Convertis au format WebP pour optimiser la taille
+- Stockés dans le dossier 'company_logo' du bucket S3
 
 ## Configuration de l'email pour la production
 

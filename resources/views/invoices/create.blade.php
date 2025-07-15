@@ -245,9 +245,15 @@
                         <!-- Bank Account (shown only when payment method is bank transfer) -->
                         <div id="bank_account_container" style="display: none;">
                             <x-input-label for="bank_account" :value="__('Compte bancaire (RIB)')"/>
-                            <x-text-input id="bank_account" class="block mt-1 w-full" type="text" name="bank_account"
-                                          :value="old('bank_account', isset($invoice) ? $invoice->bank_account : '')"
-                                          placeholder="Ex: FR76 1234 5678 9012 3456 7890 123"/>
+                            <select id="bank_account" name="bank_account"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">{{ __('Sélectionnez un compte bancaire') }}</option>
+                                @foreach($bankAccounts as $account)
+                                    <option value="{{ $account->id }}" {{ old('bank_account', isset($invoice) ? $invoice->bank_account : '') == $account->id ? 'selected' : '' }}>
+                                        {{ $account->account_name }} - {{ $account->iban }} ({{ $account->bank_name }})
+                                    </option>
+                                @endforeach
+                            </select>
                             <x-input-error :messages="$errors->get('bank_account')" class="mt-2"/>
                         </div>
 

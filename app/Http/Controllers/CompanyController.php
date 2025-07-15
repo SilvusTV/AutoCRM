@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class CompanyController extends Controller
 {
@@ -12,7 +16,7 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        $companies = Company::orderBy('name')->paginate(10);
+        $companies = Company::where('user_id', auth()->id())->where('is_own_company', 0)->orderBy('name')->paginate(10);
 
         return view('companies.index', compact('companies'));
     }
@@ -31,9 +35,35 @@ class CompanyController extends Controller
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'user_id' => 'nullable|exists:users,id',
+            'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
         ]);
 
+        // Handle logo upload if provided
+        if ($request->hasFile('logo')) {
+            $validated['logo_path'] = encodeAndUploadImg(logo: $request->file('logo'));
+        }
+
+        // If creating from profile, associate with current user
+        if (! isset($validated['user_id']) && $request->user()) {
+            $validated['user_id'] = $request->user()->id;
+        }
+
+        // Determine if this is the user's own company based on the referer
+        if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
+            $validated['is_own_company'] = true;
+        } else {
+            $validated['is_own_company'] = false;
+        }
+
         $company = Company::create($validated);
+
+        // Determine the redirect based on the referer
+        if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
+            return redirect()->route('profile.edit')
+                ->with('status', 'company-created');
+        }
 
         return redirect()->route('companies.index')
             ->with('success', 'Entreprise créée avec succès.');
@@ -52,7 +82,7 @@ class CompanyController extends Controller
      */
     public function show(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
         $clients = $company->clients()->orderBy('name')->get();
         $invoices = $company->invoices()->orderBy('created_at', 'desc')->get();
 
@@ -64,7 +94,7 @@ class CompanyController extends Controller
      */
     public function edit(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
 
         return view('companies.edit', compact('company'));
     }
@@ -74,7 +104,7 @@ class CompanyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -85,9 +115,22 @@ class CompanyController extends Controller
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
             'country' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
         ]);
 
+        // Handle logo upload if provided
+        if ($request->hasFile('logo')) {
+            $validated['logo_path'] = encodeAndUploadImg($company, $request->file('logo'));
+        }
+
         $company->update($validated);
+
+        // Determine the redirect based on the referer
+        if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
+            return redirect()->route('profile.edit')
+                ->with('status', 'company-updated');
+        }
 
         return redirect()->route('companies.show', $company->id)
             ->with('success', 'Entreprise mise à jour avec succès.');
@@ -98,10 +141,34 @@ class CompanyController extends Controller
      */
     public function destroy(string $id)
     {
-        $company = Company::findOrFail($id);
+        $company = Company::where('user_id', auth()->id())->findOrFail($id);
         $company->delete();
 
         return redirect()->route('companies.index')
             ->with('success', 'Entreprise supprimée avec succès.');
     }
+}
+
+function encodeAndUploadImg($company, $logo)
+{
+    if ($company && $company->logo_path) {
+        Storage::disk('s3')->delete($company->logo_path);
+    }
+
+    $uuid = Str::uuid()->toString();
+    $extension = 'webp';
+    $filename = $uuid.'.'.$extension;
+
+    // Create image manager with GD driver
+    $manager = new ImageManager(new Driver);
+
+    // Convert image to WebP format
+    $img = $manager->read($logo);
+    $encoded = (string) $img->toWebp(90); // 90% quality
+
+    // Store in S3
+    $path = 'company_logo/'.$filename;
+    Storage::disk('s3')->put($path, $encoded, 'public');
+
+    return $path;
 }

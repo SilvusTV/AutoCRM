@@ -24,6 +24,7 @@ class Project extends Model
         'status',
         'start_date',
         'end_date',
+        'user_id',
     ];
 
     /**
@@ -58,5 +59,13 @@ class Project extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Get the user that owns the project.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

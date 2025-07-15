@@ -14,7 +14,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::with('client')->orderBy('created_at', 'desc')->paginate(10);
+        $projects = Project::with('client')->where('user_id', auth()->id())->orderBy('created_at', 'desc')->paginate(10);
         foreach ($projects as $project) {
             if ($project->client_type === 'company') {
                 $project->display_client = Company::find($project->client_id);
@@ -31,8 +31,8 @@ class ProjectController extends Controller
      */
     public function create(Request $request)
     {
-        $clients = Client::orderBy('name')->get();
-        $companies = Company::orderBy('name')->get();
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
+        $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
         $selectedClientId = $request->query('client_id');
         $selectedCompanyId = $request->query('company_id');
 
@@ -103,21 +103,21 @@ class ProjectController extends Controller
 
         // Set client_id and client_type based on recipient type
         if ($recipientType === 'client') {
-            // Verify client exists
-            $client = Client::find($recipientId);
+            // Verify client exists and belongs to the authenticated user
+            $client = Client::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $client) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Client non trouvé.'])
+                    ->withErrors(['recipient_id' => 'Client non trouvé ou non autorisé.'])
                     ->withInput();
             }
             $validated['client_id'] = $recipientId;
             $validated['client_type'] = 'client';
         } elseif ($recipientType === 'company') {
-            // Verify company exists
-            $company = Company::find($recipientId);
+            // Verify company exists and belongs to the authenticated user
+            $company = Company::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $company) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Entreprise non trouvée.'])
+                    ->withErrors(['recipient_id' => 'Entreprise non trouvée ou non autorisée.'])
                     ->withInput();
             }
 
@@ -141,6 +141,9 @@ class ProjectController extends Controller
         // Remove recipient_id from validated data
         unset($validated['recipient_id']);
 
+        // Add user_id to validated data
+        $validated['user_id'] = auth()->id();
+
         $project = Project::create($validated);
 
         return redirect()->route('projects.index')
@@ -152,7 +155,7 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        $project = Project::with(['client', 'timeEntries.user'])->findOrFail($id);
+        $project = Project::with(['client', 'timeEntries.user'])->where('user_id', auth()->id())->findOrFail($id);
 
         // Récupérer l'utilisateur rattaché à client_id
         $client = null;
@@ -174,9 +177,9 @@ class ProjectController extends Controller
      */
     public function edit(string $id)
     {
-        $project = Project::findOrFail($id);
-        $clients = Client::orderBy('name')->get();
-        $companies = Company::orderBy('name')->get();
+        $project = Project::where('user_id', auth()->id())->findOrFail($id);
+        $clients = Client::where('user_id', auth()->id())->orderBy('name')->get();
+        $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
 
         // Create a combined list of recipients (clients and companies)
         $recipients = [];
@@ -230,7 +233,7 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $project = Project::findOrFail($id);
+        $project = Project::where('user_id', auth()->id())->findOrFail($id);
 
         $validated = $request->validate([
             'recipient_id' => 'required|string',
@@ -254,21 +257,21 @@ class ProjectController extends Controller
 
         // Set client_id and client_type based on recipient type
         if ($recipientType === 'client') {
-            // Verify client exists
-            $client = Client::find($recipientId);
+            // Verify client exists and belongs to the authenticated user
+            $client = Client::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $client) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Client non trouvé.'])
+                    ->withErrors(['recipient_id' => 'Client non trouvé ou non autorisé.'])
                     ->withInput();
             }
             $validated['client_id'] = $recipientId;
             $validated['client_type'] = 'client';
         } elseif ($recipientType === 'company') {
-            // Verify company exists
-            $company = Company::find($recipientId);
+            // Verify company exists and belongs to the authenticated user
+            $company = Company::where('id', $recipientId)->where('user_id', auth()->id())->first();
             if (! $company) {
                 return redirect()->back()
-                    ->withErrors(['recipient_id' => 'Entreprise non trouvée.'])
+                    ->withErrors(['recipient_id' => 'Entreprise non trouvée ou non autorisée.'])
                     ->withInput();
             }
 
@@ -303,7 +306,7 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        $project = Project::findOrFail($id);
+        $project = Project::where('user_id', auth()->id())->findOrFail($id);
         $project->delete();
 
         return redirect()->route('projects.index')

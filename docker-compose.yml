@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    image: auto-crm-app
     container_name: auto-crm-app
     restart: unless-stopped
     volumes:
