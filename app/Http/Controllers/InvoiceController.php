@@ -449,7 +449,11 @@ class InvoiceController extends Controller
             ->where('user_id', auth()->id())
             ->findOrFail($id);
 
-        $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
+        // Get the user's own company information
+        $ownCompany = auth()->user()->company;
+        $logoPath = $ownCompany->logo_path ? env('AWS_URL').$ownCompany->logo_path : null;
+
+        $pdf = PDF::loadView('invoices.pdf', compact('invoice', 'ownCompany', 'logoPath'));
 
         $prefix = $invoice->isQuote() ? 'devis_' : 'facture_';
 

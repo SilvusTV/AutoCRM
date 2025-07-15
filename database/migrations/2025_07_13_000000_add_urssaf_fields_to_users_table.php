@@ -16,7 +16,7 @@ return new class extends Migration
                 ->nullable()
                 ->after('email_verified_at');
 
-            $table->decimal('tax_level', '5,2')->nullable()->after('declaration_frequency');
+            $table->decimal('tax_level', 5, 2)->nullable()->after('declaration_frequency');
         });
     }
 
