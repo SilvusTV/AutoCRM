@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\CountryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +19,12 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $company = $user->company;
+        $countries = CountryService::getCountries();
 
         return view('profile.edit', [
             'user' => $user,
             'company' => $company,
+            'countries' => $countries,
         ]);
     }
 

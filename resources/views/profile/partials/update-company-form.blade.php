@@ -29,6 +29,17 @@
                           :value="old('address', $company->address ?? '')"/>
             <x-input-error class="mt-2" :messages="$errors->get('address')"/>
         </div>
+        <div>
+            <x-input-label for="country" :value="__('Pays')"/>
+            <select id="country" name="country"
+                    class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <option value="">{{ __('Sélectionnez un pays') }}</option>
+                @foreach ($countries as $code => $name)
+                    <option value="{{ $name }}" {{ old('country', $company->country ?? '') == $name ? 'selected' : '' }}>{{ $name }}</option>
+                @endforeach
+            </select>
+            <x-input-error class="mt-2" :messages="$errors->get('country')"/>
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
             <div>
@@ -81,17 +92,10 @@
 
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <x-input-label for="naf_code" :value="__('Code NAF')"/>
+                <x-input-label for="naf_code" :value="__('Code NAF (optionnel)')"/>
                 <x-text-input id="naf_code" name="naf_code" type="text" class="mt-1 block w-full"
                               :value="old('naf_code', $company->naf_code ?? '')"/>
                 <x-input-error class="mt-2" :messages="$errors->get('naf_code')"/>
-            </div>
-
-            <div>
-                <x-input-label for="country" :value="__('Pays')"/>
-                <x-text-input id="country" name="country" type="text" class="mt-1 block w-full"
-                              :value="old('country', $company->country ?? '')"/>
-                <x-input-error class="mt-2" :messages="$errors->get('country')"/>
             </div>
         </div>
 
