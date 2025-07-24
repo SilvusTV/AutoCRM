@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // URSSAF Declaration routes
     Route::resource('urssaf-declarations', UrssafDeclarationController::class);
+    Route::post('urssaf-declarations/calculate-revenue', [UrssafDeclarationController::class, 'calculateRevenue'])->name('urssaf-declarations.calculate-revenue');
 
     // URSSAF Profile routes
     Route::patch('/urssaf', [UrssafController::class, 'update'])->name('urssaf.update');

@@ -17,6 +17,25 @@
                     <form method="POST" action="{{ route('urssaf-declarations.store') }}" class="space-y-6">
                         @csrf
 
+                        <!-- Declaration Frequency Info -->
+                        <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-md mb-6">
+                            <p class="text-blue-800 dark:text-blue-200">
+                                @if($declarationFrequency === 'monthly')
+                                    Vous êtes configuré pour des déclarations <strong>mensuelles</strong> selon votre
+                                    profil.
+                                @elseif($declarationFrequency === 'quarterly')
+                                    Vous êtes configuré pour des déclarations <strong>trimestrielles</strong> selonvotre
+                                    profil.
+                                @elseif($declarationFrequency === 'annually')
+                                    Vous êtes configuré pour des déclarations <strong>annuelles</strong> selon votre
+                                    profil.
+                                @else
+                                    Votre fréquence de déclaration n'est pas configurée dans votre profil.
+                                @endif
+                                <a href="{{ route('profile.edit') }}#urssaf-section" class="underline">Modifier</a>
+                            </p>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Year -->
                             <div>
@@ -25,33 +44,140 @@
                                 <x-input-error :messages="$errors->get('year')" class="mt-2" />
                             </div>
 
-                            <!-- Month -->
+                            <!-- Period Selection (Month/Quarter/Year) -->
                             <div>
-                                <x-input-label for="month" :value="__('Mois')" />
-                                <select id="month" name="month" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
-                                    <option value="1" {{ old('month', $currentMonth) == 1 ? 'selected' : '' }}>Janvier</option>
-                                    <option value="2" {{ old('month', $currentMonth) == 2 ? 'selected' : '' }}>Février</option>
-                                    <option value="3" {{ old('month', $currentMonth) == 3 ? 'selected' : '' }}>Mars</option>
-                                    <option value="4" {{ old('month', $currentMonth) == 4 ? 'selected' : '' }}>Avril</option>
-                                    <option value="5" {{ old('month', $currentMonth) == 5 ? 'selected' : '' }}>Mai</option>
-                                    <option value="6" {{ old('month', $currentMonth) == 6 ? 'selected' : '' }}>Juin</option>
-                                    <option value="7" {{ old('month', $currentMonth) == 7 ? 'selected' : '' }}>Juillet</option>
-                                    <option value="8" {{ old('month', $currentMonth) == 8 ? 'selected' : '' }}>Août</option>
-                                    <option value="9" {{ old('month', $currentMonth) == 9 ? 'selected' : '' }}>Septembre</option>
-                                    <option value="10" {{ old('month', $currentMonth) == 10 ? 'selected' : '' }}>Octobre</option>
-                                    <option value="11" {{ old('month', $currentMonth) == 11 ? 'selected' : '' }}>Novembre</option>
-                                    <option value="12" {{ old('month', $currentMonth) == 12 ? 'selected' : '' }}>Décembre</option>
-                                </select>
+                                @if($declarationFrequency === 'monthly')
+                                    <x-input-label for="month" :value="__('Mois')"/>
+                                    <select id="month" name="month"
+                                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                            required>
+                                        <option value="1" {{ old('month', $currentMonth) == 1 ? 'selected' : '' }}>
+                                            Janvier
+                                        </option>
+                                        <option value="2" {{ old('month', $currentMonth) == 2 ? 'selected' : '' }}>
+                                            Février
+                                        </option>
+                                        <option value="3" {{ old('month', $currentMonth) == 3 ? 'selected' : '' }}>
+                                            Mars
+                                        </option>
+                                        <option value="4" {{ old('month', $currentMonth) == 4 ? 'selected' : '' }}>
+                                            Avril
+                                        </option>
+                                        <option value="5" {{ old('month', $currentMonth) == 5 ? 'selected' : '' }}>Mai
+                                        </option>
+                                        <option value="6" {{ old('month', $currentMonth) == 6 ? 'selected' : '' }}>
+                                            Juin
+                                        </option>
+                                        <option value="7" {{ old('month', $currentMonth) == 7 ? 'selected' : '' }}>
+                                            Juillet
+                                        </option>
+                                        <option value="8" {{ old('month', $currentMonth) == 8 ? 'selected' : '' }}>
+                                            Août
+                                        </option>
+                                        <option value="9" {{ old('month', $currentMonth) == 9 ? 'selected' : '' }}>
+                                            Septembre
+                                        </option>
+                                        <option value="10" {{ old('month', $currentMonth) == 10 ? 'selected' : '' }}>
+                                            Octobre
+                                        </option>
+                                        <option value="11" {{ old('month', $currentMonth) == 11 ? 'selected' : '' }}>
+                                            Novembre
+                                        </option>
+                                        <option value="12" {{ old('month', $currentMonth) == 12 ? 'selected' : '' }}>
+                                            Décembre
+                                        </option>
+                                    </select>
+                                @elseif($declarationFrequency === 'quarterly')
+                                    <x-input-label for="month" :value="__('Trimestre')"/>
+                                    <select id="month" name="month"
+                                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                            required>
+                                        <option value="1" {{ old('month', $currentQuarter) == 1 ? 'selected' : '' }}>Q1
+                                            (Janvier - Mars)
+                                        </option>
+                                        <option value="2" {{ old('month', $currentQuarter) == 2 ? 'selected' : '' }}>Q2
+                                            (Avril - Juin)
+                                        </option>
+                                        <option value="3" {{ old('month', $currentQuarter) == 3 ? 'selected' : '' }}>Q3
+                                            (Juillet - Septembre)
+                                        </option>
+                                        <option value="4" {{ old('month', $currentQuarter) == 4 ? 'selected' : '' }}>Q4
+                                            (Octobre - Décembre)
+                                        </option>
+                                    </select>
+                                @elseif($declarationFrequency === 'annually')
+                                    <x-input-label for="month" :value="__('Période')"/>
+                                    <select id="month" name="month"
+                                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                            required>
+                                        <option value="1" selected>Année complète</option>
+                                    </select>
+                                @else
+                                    <x-input-label for="month" :value="__('Mois')"/>
+                                    <select id="month" name="month"
+                                            class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                            required>
+                                        <option value="1" {{ old('month', $currentMonth) == 1 ? 'selected' : '' }}>
+                                            Janvier
+                                        </option>
+                                        <option value="2" {{ old('month', $currentMonth) == 2 ? 'selected' : '' }}>
+                                            Février
+                                        </option>
+                                        <option value="3" {{ old('month', $currentMonth) == 3 ? 'selected' : '' }}>
+                                            Mars
+                                        </option>
+                                        <option value="4" {{ old('month', $currentMonth) == 4 ? 'selected' : '' }}>
+                                            Avril
+                                        </option>
+                                        <option value="5" {{ old('month', $currentMonth) == 5 ? 'selected' : '' }}>Mai
+                                        </option>
+                                        <option value="6" {{ old('month', $currentMonth) == 6 ? 'selected' : '' }}>
+                                            Juin
+                                        </option>
+                                        <option value="7" {{ old('month', $currentMonth) == 7 ? 'selected' : '' }}>
+                                            Juillet
+                                        </option>
+                                        <option value="8" {{ old('month', $currentMonth) == 8 ? 'selected' : '' }}>
+                                            Août
+                                        </option>
+                                        <option value="9" {{ old('month', $currentMonth) == 9 ? 'selected' : '' }}>
+                                            Septembre
+                                        </option>
+                                        <option value="10" {{ old('month', $currentMonth) == 10 ? 'selected' : '' }}>
+                                            Octobre
+                                        </option>
+                                        <option value="11" {{ old('month', $currentMonth) == 11 ? 'selected' : '' }}>
+                                            Novembre
+                                        </option>
+                                        <option value="12" {{ old('month', $currentMonth) == 12 ? 'selected' : '' }}>
+                                            Décembre
+                                        </option>
+                                    </select>
+                                @endif
                                 <x-input-error :messages="$errors->get('month')" class="mt-2" />
                             </div>
 
                             <!-- Declared Revenue -->
                             <div>
                                 <x-input-label for="declared_revenue" :value="__('Revenu déclaré (€)')" />
-                                <x-text-input id="declared_revenue" class="block mt-1 w-full" type="number" name="declared_revenue" :value="old('declared_revenue', $monthlyRevenue)" step="0.01" min="0" required />
+                                <x-text-input id="declared_revenue" class="block mt-1 w-full" type="number"
+                                              name="declared_revenue" :value="old('declared_revenue', $revenue)"
+                                              step="0.01" min="0" required/>
                                 <x-input-error :messages="$errors->get('declared_revenue')" class="mt-2" />
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    Montant calculé à partir des factures payées du mois. Vous pouvez le modifier si nécessaire.
+                                    @if($declarationFrequency === 'monthly')
+                                        Montant calculé à partir des factures payées du mois. Vous pouvez le modifier si
+                                        nécessaire.
+                                    @elseif($declarationFrequency === 'quarterly')
+                                        Montant calculé à partir des factures payées du trimestre. Vous pouvez le
+                                        modifier si nécessaire.
+                                    @elseif($declarationFrequency === 'annually')
+                                        Montant calculé à partir des factures payées de l'année. Vous pouvez le modifier
+                                        si nécessaire.
+                                    @else
+                                        Montant calculé à partir des factures payées. Vous pouvez le modifier si
+                                        nécessaire.
+                                    @endif
                                 </p>
                             </div>
 
@@ -61,7 +187,7 @@
                                 <x-text-input id="charge_rate" class="block mt-1 w-full" type="number" name="charge_rate" :value="old('charge_rate', $defaultChargeRate)" step="0.01" min="0" max="100" required />
                                 <x-input-error :messages="$errors->get('charge_rate')" class="mt-2" />
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    Taux par défaut pour les micro-entrepreneurs : 22%
+                                    Taux récupéré depuis votre profil. Vous pouvez le modifier si nécessaire.
                                 </p>
                             </div>
                         </div>
@@ -101,7 +227,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             const isPaidCheckbox = document.getElementById('is_paid');
             const paymentDateContainer = document.getElementById('payment_date_container');
-            
+          const yearInput = document.getElementById('year');
+          const monthInput = document.getElementById('month');
+          const declaredRevenueInput = document.getElementById('declared_revenue');
+          const chargeRateInput = document.getElementById('charge_rate');
+
             isPaidCheckbox.addEventListener('change', function() {
                 if (this.checked) {
                     paymentDateContainer.classList.remove('hidden');
@@ -109,22 +239,61 @@
                     paymentDateContainer.classList.add('hidden');
                 }
             });
-            
+
             // Calculate charges amount when revenue or rate changes
-            const declaredRevenueInput = document.getElementById('declared_revenue');
-            const chargeRateInput = document.getElementById('charge_rate');
-            
             function updateChargesAmount() {
                 const revenue = parseFloat(declaredRevenueInput.value) || 0;
                 const rate = parseFloat(chargeRateInput.value) || 0;
                 const chargesAmount = revenue * (rate / 100);
-                
+
                 // You could display this somewhere on the form if needed
                 console.log('Charges amount:', chargesAmount.toFixed(2));
             }
-            
+
+          // Update revenue when period changes
+          function updateRevenue() {
+            const year = yearInput.value;
+            const month = monthInput.value;
+
+            if (!year || !month) return;
+
+            // Show loading indicator
+            declaredRevenueInput.setAttribute('disabled', 'disabled');
+            declaredRevenueInput.value = 'Chargement...';
+
+            // Make AJAX request to calculate revenue
+            fetch('{{ route('urssaf-declarations.calculate-revenue') }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify({
+                year: year,
+                month: month
+              })
+            })
+              .then(response => response.json())
+              .then(data => {
+                // Update revenue field
+                declaredRevenueInput.value = data.revenue;
+                declaredRevenueInput.removeAttribute('disabled');
+
+                // Update charges amount
+                updateChargesAmount();
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                declaredRevenueInput.value = '';
+                declaredRevenueInput.removeAttribute('disabled');
+              });
+          }
+
+          // Add event listeners
             declaredRevenueInput.addEventListener('input', updateChargesAmount);
             chargeRateInput.addEventListener('input', updateChargesAmount);
+          yearInput.addEventListener('change', updateRevenue);
+          monthInput.addEventListener('change', updateRevenue);
         });
     </script>
 </x-app-layout>
