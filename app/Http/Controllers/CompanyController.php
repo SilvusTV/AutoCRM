@@ -62,7 +62,9 @@ class CompanyController extends Controller
 
         // Determine the redirect based on the referer
         if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
-            return redirect()->route('profile.edit')
+            $activeTab = $request->input('active_tab', 'company-tab');
+
+            return redirect()->route('profile.edit', ['tab' => $activeTab])
                 ->with('status', 'company-created');
         }
 
@@ -132,7 +134,9 @@ class CompanyController extends Controller
 
         // Determine the redirect based on the referer
         if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
-            return redirect()->route('profile.edit')
+            $activeTab = $request->input('active_tab', 'company-tab');
+
+            return redirect()->route('profile.edit', ['tab' => $activeTab])
                 ->with('status', 'company-updated');
         }
 

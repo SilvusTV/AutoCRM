@@ -15,6 +15,7 @@
         @if(isset($company))
             @method('patch')
         @endif
+        <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'company-tab' }}">
 
         <div>
             <x-input-label for="name" :value="__('Raison sociale')"/>
