@@ -127,6 +127,16 @@
               element.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
             }
           });
+
+          // Update URL with the active tab
+          const url = new URL(window.location);
+          url.searchParams.set('tab', tabId);
+          window.history.pushState({}, '', url);
+
+          // Update hidden input fields in all forms
+          document.querySelectorAll('input[name="active_tab"]').forEach(input => {
+            input.value = tabId;
+          });
         }
 
         // Add click event listeners to tabs
@@ -135,6 +145,14 @@
             activateTab(tabId);
           });
         });
+
+        // Set active tab from URL parameter or default
+        const activeTab = '{{ $activeTab }}';
+        if (Object.keys(tabs).includes(activeTab)) {
+          activateTab(activeTab);
+        } else {
+          activateTab('profile-tab');
+        }
       });
     </script>
 </x-app-layout>

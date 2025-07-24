@@ -21,6 +21,8 @@ class UrssafController extends Controller
         $user = $request->user();
         $user->update($validated);
 
-        return Redirect::route('profile.edit')->with('status', 'urssaf-updated');
+        $activeTab = $request->input('active_tab', 'urssaf-tab');
+
+        return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'urssaf-updated');
     }
 }

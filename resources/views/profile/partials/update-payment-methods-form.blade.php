@@ -38,6 +38,7 @@
                                       class="inline mr-2">
                                     @csrf
                                     @method('patch')
+                                    <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'payment-tab' }}">
                                     <button type="submit"
                                             class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
                                         {{ __('Définir comme compte par défaut') }}
@@ -47,6 +48,7 @@
                             <form method="post" action="{{ route('bank-accounts.destroy', $account) }}" class="inline">
                                 @csrf
                                 @method('delete')
+                                <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'payment-tab' }}">
                                 <button type="submit"
                                         class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                         onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer ce compte bancaire?') }}')">
@@ -96,6 +98,7 @@
                             <form method="post" action="{{ route('payment-methods.destroy', $method) }}" class="inline">
                                 @csrf
                                 @method('delete')
+                                <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'payment-tab' }}">
                                 <button type="submit"
                                         class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                         onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer ce moyen de paiement?') }}')">
@@ -142,6 +145,7 @@
                 @csrf
                 <input type="hidden" id="bankAccountId" name="id" value="">
                 <input type="hidden" id="bankAccountMethod" name="_method" value="post">
+                <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'payment-tab' }}">
 
                 <div>
                     <x-input-label for="account_name" :value="__('Libellé du compte')"/>

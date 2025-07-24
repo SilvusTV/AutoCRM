@@ -12,6 +12,7 @@
     <form method="post" action="{{ route('urssaf.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')
+        <input type="hidden" name="active_tab" value="{{ $activeTab ?? 'urssaf-tab' }}">
 
         <div>
             <x-input-label for="declaration_frequency" :value="__('Rythme de déclaration')"/>

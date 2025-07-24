@@ -19,11 +19,12 @@ class ClientFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'company' => $this->faker->optional(0.7)->company(),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'address' => $this->faker->address(),
-            'siret' => $this->faker->optional(0.5)->numerify('##############'),
+            'country' => $this->faker->country(),
+            'company_id' => null,
+            'user_id' => 1,
         ];
     }
 }

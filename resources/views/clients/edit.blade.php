@@ -57,16 +57,21 @@
 
                         <!-- Address -->
                         <div>
-                            <x-input-label for="address" :value="__('Adresse (optionnel)')" />
+                            <x-input-label for="address" :value="__('Adresse')"/>
                             <textarea id="address" name="address" class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">{{ old('address', $client->address) }}</textarea>
                             <x-input-error :messages="$errors->get('address')" class="mt-2" />
                         </div>
 
                         <!-- Country -->
                         <div>
-                            <x-input-label for="country" :value="__('Pays (optionnel)')"/>
-                            <x-text-input id="country" class="block mt-1 w-full" type="text" name="country"
-                                          :value="old('country', $client->country)"/>
+                            <x-input-label for="country" :value="__('Pays')"/>
+                            <select id="country" name="country"
+                                    class="block mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 shadow-sm">
+                                <option value="">{{ __('Sélectionnez un pays') }}</option>
+                                @foreach ($countries as $code => $name)
+                                    <option value="{{ $name }}" {{ old('country', $client->country) == $name ? 'selected' : '' }}>{{ $name }}</option>
+                                @endforeach
+                            </select>
                             <x-input-error :messages="$errors->get('country')" class="mt-2"/>
                         </div>
 

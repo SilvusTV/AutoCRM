@@ -25,14 +25,20 @@ class BankAccountController extends Controller
             'is_default' => 'boolean',
         ]);
 
-        // If this is the default account, unset all other default accounts
-        if ($request->has('is_default') && $request->is_default) {
+        // Check if this is the first bank account for the user
+        $isFirstAccount = $request->user()->bankAccounts()->count() === 0;
+
+        // If this is the default account or the first account, unset all other default accounts
+        if (($request->has('is_default') && $request->is_default) || $isFirstAccount) {
             $request->user()->bankAccounts()->update(['is_default' => false]);
+            $validated['is_default'] = true;
         }
 
         $request->user()->bankAccounts()->create($validated);
 
-        return Redirect::route('profile.edit')->with('status', 'bank-account-created');
+        $activeTab = $request->input('active_tab', 'payment-tab');
+
+        return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'bank-account-created');
     }
 
     /**
@@ -62,9 +68,13 @@ class BankAccountController extends Controller
 
             $bankAccount->update($validated);
 
-            return Redirect::route('profile.edit')->with('status', 'bank-account-updated');
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'bank-account-updated');
         } catch (Exception $e) {
-            return Redirect::route('profile.edit')->with('error', 'Failed to update bank account: '.$e->getMessage());
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('error', 'Failed to update bank account: '.$e->getMessage());
         }
     }
 
@@ -102,9 +112,13 @@ class BankAccountController extends Controller
             // Set this bank account as default
             $bankAccount->update(['is_default' => true]);
 
-            return Redirect::route('profile.edit')->with('status', 'bank-account-set-as-default');
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'bank-account-set-as-default');
         } catch (Exception $e) {
-            return Redirect::route('profile.edit')->with('error', 'Failed to set bank account as default: '.$e->getMessage());
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('error', 'Failed to set bank account as default: '.$e->getMessage());
         }
     }
 
@@ -121,9 +135,13 @@ class BankAccountController extends Controller
 
             $bankAccount->delete();
 
-            return Redirect::route('profile.edit')->with('status', 'bank-account-deleted');
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'bank-account-deleted');
         } catch (Exception $e) {
-            return Redirect::route('profile.edit')->with('error', 'Failed to delete bank account: '.$e->getMessage());
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('error', 'Failed to delete bank account: '.$e->getMessage());
         }
     }
 }

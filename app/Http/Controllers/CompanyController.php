@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Services\CountryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -34,7 +35,7 @@ class CompanyController extends Controller
             'siret' => 'nullable|string|max:14',
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
+            'country' => 'required|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'user_id' => 'nullable|exists:users,id',
             'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
@@ -61,7 +62,9 @@ class CompanyController extends Controller
 
         // Determine the redirect based on the referer
         if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
-            return redirect()->route('profile.edit')
+            $activeTab = $request->input('active_tab', 'company-tab');
+
+            return redirect()->route('profile.edit', ['tab' => $activeTab])
                 ->with('status', 'company-created');
         }
 
@@ -74,7 +77,9 @@ class CompanyController extends Controller
      */
     public function create()
     {
-        return view('companies.create');
+        $countries = CountryService::getCountries();
+
+        return view('companies.create', compact('countries'));
     }
 
     /**
@@ -95,8 +100,9 @@ class CompanyController extends Controller
     public function edit(string $id)
     {
         $company = Company::where('user_id', auth()->id())->findOrFail($id);
+        $countries = CountryService::getCountries();
 
-        return view('companies.edit', compact('company'));
+        return view('companies.edit', compact('company', 'countries'));
     }
 
     /**
@@ -114,7 +120,7 @@ class CompanyController extends Controller
             'siret' => 'nullable|string|max:14',
             'tva_number' => 'nullable|string|max:255',
             'naf_code' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
+            'country' => 'required|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'regime' => 'nullable|string|in:auto-entrepreneur,eirl,eurl,sasu,sarl,sas,sa,other',
         ]);
@@ -128,7 +134,9 @@ class CompanyController extends Controller
 
         // Determine the redirect based on the referer
         if ($request->header('referer') && str_contains($request->header('referer'), 'profile')) {
-            return redirect()->route('profile.edit')
+            $activeTab = $request->input('active_tab', 'company-tab');
+
+            return redirect()->route('profile.edit', ['tab' => $activeTab])
                 ->with('status', 'company-updated');
         }
 

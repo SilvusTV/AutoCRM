@@ -31,7 +31,9 @@ class PaymentMethodController extends Controller
 
         $request->user()->paymentMethods()->create($validated);
 
-        return Redirect::route('profile.edit')->with('status', 'payment-method-created');
+        $activeTab = $request->input('active_tab', 'payment-tab');
+
+        return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'payment-method-created');
     }
 
     /**
@@ -59,9 +61,13 @@ class PaymentMethodController extends Controller
 
             $paymentMethod->delete();
 
-            return Redirect::route('profile.edit')->with('status', 'payment-method-deleted');
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'payment-method-deleted');
         } catch (Exception $e) {
-            return Redirect::route('profile.edit')->with('error', 'Failed to delete payment method: '.$e->getMessage());
+            $activeTab = $request->input('active_tab', 'payment-tab');
+
+            return Redirect::route('profile.edit', ['tab' => $activeTab])->with('error', 'Failed to delete payment method: '.$e->getMessage());
         }
     }
 }

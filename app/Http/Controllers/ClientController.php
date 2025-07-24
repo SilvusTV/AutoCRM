@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Company;
+use App\Services\CountryService;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -24,8 +25,9 @@ class ClientController extends Controller
     public function create()
     {
         $companies = Company::orderBy('name')->get();
+        $countries = CountryService::getCountries();
 
-        return view('clients.create', compact('companies'));
+        return view('clients.create', compact('companies', 'countries'));
     }
 
     /**
@@ -37,8 +39,8 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'country' => 'nullable|string|max:255',
+            'address' => 'required|string',
+            'country' => 'required|string|max:255',
             'company_id' => 'nullable|exists:companies,id',
         ]);
 
@@ -78,8 +80,9 @@ class ClientController extends Controller
     {
         $client = Client::where('user_id', auth()->id())->findOrFail($id);
         $companies = Company::where('user_id', auth()->id())->orderBy('name')->get();
+        $countries = CountryService::getCountries();
 
-        return view('clients.edit', compact('client', 'companies'));
+        return view('clients.edit', compact('client', 'companies', 'countries'));
     }
 
     /**
@@ -93,8 +96,8 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'country' => 'nullable|string|max:255',
+            'address' => 'required|string',
+            'country' => 'required|string|max:255',
             'company_id' => 'nullable|exists:companies,id',
         ]);
 

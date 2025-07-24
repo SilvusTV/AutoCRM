@@ -21,7 +21,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -39,6 +39,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('time-entries', TimeEntryController::class);
     Route::get('time-entries-export', [TimeEntryController::class, 'export'])->name('time-entries.export');
     Route::get('time-entries-calendar', [TimeEntryController::class, 'calendar'])->name('time-entries.calendar');
+    Route::get('time-entries-stopwatch', [TimeEntryController::class, 'stopwatch'])->name('time-entries.stopwatch');
+    Route::post('time-entries-stopwatch', [TimeEntryController::class, 'storeStopwatch'])->name('time-entries.store-stopwatch');
 
     // Invoice routes
     Route::resource('invoices', InvoiceController::class);
@@ -53,6 +55,7 @@ Route::middleware('auth')->group(function () {
 
     // URSSAF Declaration routes
     Route::resource('urssaf-declarations', UrssafDeclarationController::class);
+    Route::post('urssaf-declarations/calculate-revenue', [UrssafDeclarationController::class, 'calculateRevenue'])->name('urssaf-declarations.calculate-revenue');
 
     // URSSAF Profile routes
     Route::patch('/urssaf', [UrssafController::class, 'update'])->name('urssaf.update');

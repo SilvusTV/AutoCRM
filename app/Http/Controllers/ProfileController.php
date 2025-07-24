@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\CountryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +19,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $company = $user->company;
+        $countries = CountryService::getCountries();
+        $activeTab = $request->query('tab', 'profile-tab');
 
         return view('profile.edit', [
             'user' => $user,
             'company' => $company,
+            'countries' => $countries,
+            'activeTab' => $activeTab,
         ]);
     }
 
@@ -38,7 +43,9 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $activeTab = $request->input('active_tab', 'profile-tab');
+
+        return Redirect::route('profile.edit', ['tab' => $activeTab])->with('status', 'profile-updated');
     }
 
     /**
