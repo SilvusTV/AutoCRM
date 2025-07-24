@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('time-entries', TimeEntryController::class);
     Route::get('time-entries-export', [TimeEntryController::class, 'export'])->name('time-entries.export');
     Route::get('time-entries-calendar', [TimeEntryController::class, 'calendar'])->name('time-entries.calendar');
+    Route::get('time-entries-stopwatch', [TimeEntryController::class, 'stopwatch'])->name('time-entries.stopwatch');
+    Route::post('time-entries-stopwatch', [TimeEntryController::class, 'storeStopwatch'])->name('time-entries.store-stopwatch');
 
     // Invoice routes
     Route::resource('invoices', InvoiceController::class);

@@ -11,6 +11,15 @@
                     </svg>
                     {{ __('Exporter CSV') }}
                 </a>
+                <a href="{{ route('time-entries.stopwatch') }}"
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ __('Chronomètre') }}
+                </a>
                 <a href="{{ route('time-entries.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -158,10 +167,11 @@
                                                     @if($timeEntry->start_time && $timeEntry->end_time)
                                                         {{ $timeEntry->start_time->format('H:i') }} - {{ $timeEntry->end_time->format('H:i') }}
                                                         <span class="text-xs text-gray-400 dark:text-gray-500">
-                                                            ({{ floor($timeEntry->duration_minutes / 60) }}h{{ $timeEntry->duration_minutes % 60 }})
+                                                            ({{ floor($timeEntry->duration_minutes / 60) }}h{{ str_pad($timeEntry->duration_minutes % 60, 2, '0', STR_PAD_LEFT) }})
                                                         </span>
                                                     @else
-                                                        {{ floor($timeEntry->duration_minutes / 60) }}h{{ $timeEntry->duration_minutes % 60 }}
+                                                        {{ floor($timeEntry->duration_minutes / 60) }}
+                                                        h{{ str_pad($timeEntry->duration_minutes % 60, 2, '0', STR_PAD_LEFT) }}
                                                     @endif
                                                 </div>
                                             </td>

@@ -48,6 +48,20 @@ class TimeEntryController extends Controller
             ->paginate(15)
             ->withQueryString(); // This preserves the query parameters in pagination links
 
+        foreach ($timeEntries as $entry) {
+            if (! isset($entry->duration_minutes) && isset($entry->start_time) && isset($entry->end_time)) {
+                $start = Carbon::parse($entry->start_time);
+                $end = Carbon::parse($entry->end_time);
+
+                // If end time is earlier than start time, it means the time range spans midnight
+                if ($end->lt($start)) {
+                    $end->addDay();
+                }
+
+                $entry->duration_minutes = $start->diffInMinutes($end);
+            }
+        }
+
         // Get projects and clients for filter dropdowns
         $projects = Project::where('status', '!=', 'archive')
             ->where('user_id', auth()->id())
@@ -110,6 +124,11 @@ class TimeEntryController extends Controller
             // Calculate duration in minutes
             $start = Carbon::parse($validated['start_time']);
             $end = Carbon::parse($validated['end_time']);
+
+            if ($end->lt($start)) {
+                $end->addDay();
+            }
+
             $timeEntry->duration_minutes = $end->diffInMinutes($start);
         }
 
@@ -183,7 +202,14 @@ class TimeEntryController extends Controller
             // Calculate duration in minutes
             $start = Carbon::parse($validated['start_time']);
             $end = Carbon::parse($validated['end_time']);
-            $timeEntry->duration_minutes = $end->diffInMinutes($start);
+
+            // If end time is earlier than start time, it means the time range spans midnight
+            // Add a day to end time to calculate the correct duration
+            if ($end->lt($start)) {
+                $end->addDay();
+            }
+
+            $timeEntry->duration_minutes = $start->diffInMinutes($end);
         }
 
         $timeEntry->save();
@@ -391,5 +417,57 @@ class TimeEntryController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Show the stopwatch interface for time tracking.
+     */
+    public function stopwatch(Request $request)
+    {
+        $projects = Project::where('status', '!=', 'archive')
+            ->where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
+
+        $selectedProjectId = $request->query('project_id');
+
+        return view('time-entries.stopwatch', compact('projects', 'selectedProjectId'));
+    }
+
+    /**
+     * Store a time entry created with the stopwatch.
+     */
+    public function storeStopwatch(Request $request)
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'description' => 'nullable|string',
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'end_time' => 'required|date_format:Y-m-d H:i:s|after:start_time',
+        ]);
+
+        // Verify that the project belongs to the authenticated user
+        $project = Project::where('id', $validated['project_id'])
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        // Create a new time entry
+        $timeEntry = new TimeEntry;
+        $timeEntry->project_id = $validated['project_id'];
+        $timeEntry->user_id = auth()->id();
+        $timeEntry->date = Carbon::parse($validated['start_time'])->format('Y-m-d');
+        $timeEntry->description = $validated['description'] ?? null;
+        $timeEntry->start_time = Carbon::parse($validated['start_time'])->format('H:i');
+        $timeEntry->end_time = Carbon::parse($validated['end_time'])->format('H:i');
+
+        // Calculate duration in minutes
+        $start = Carbon::parse($validated['start_time']);
+        $end = Carbon::parse($validated['end_time']);
+        $timeEntry->duration_minutes = $start->diffInMinutes($end);
+
+        $timeEntry->save();
+
+        return redirect()->route('time-entries.index')
+            ->with('success', 'Temps enregistré avec succès.');
     }
 }
