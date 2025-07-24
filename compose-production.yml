@@ -56,10 +56,10 @@ services:
     image: mysql:8
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: FreeMiniCRMR00tP@ssw0rd-2025
       MYSQL_DATABASE: autocrm
-      MYSQL_USER: autocrm
-      MYSQL_PASSWORD: autocrm
+      MYSQL_USER: SilvusServerAutoCRMFreelance
+      MYSQL_PASSWORD: AutoCRMFreelancePassw0rd
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
